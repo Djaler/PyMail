@@ -16,8 +16,6 @@ class MainWindow(QMainWindow):
         
         self._init_toolbar()
         
-        
-        
         self.setWindowTitle('PyMail')
         self.center()
         self.show()
