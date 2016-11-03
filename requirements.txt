@@ -1,4 +1,3 @@
-imbox==0.8.5
-outbox==0.1.8
-sqlalchemy
-sqlalchemy-migrate
+pony
+imapy
+outbox
