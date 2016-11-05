@@ -9,34 +9,65 @@ class MainWindow(QMainWindow):
         self._init_ui()
     
     def _init_ui(self):
-        central_widget = QWidget()
-        main_layout = QHBoxLayout()
-        central_widget.setLayout(main_layout)
-        self.setCentralWidget(central_widget)
-        
         self._init_toolbar()
         
+        self._splitter = QSplitter()
+        self._splitter.setChildrenCollapsible(False)
+        self.connect(self._splitter, SIGNAL('splitterMoved(int, int)'),
+                     self._splitter_moved)
+        self.setCentralWidget(self._splitter)
+        
+        self._splitter.addWidget(self._folders_widget())
+        
+        mails = QScrollArea()
+        self._splitter.addWidget(mails)
+        
+        mail = QScrollArea()
+        self._splitter.addWidget(mail)
+        
+        self.resize(700, 500)
         self.setWindowTitle('PyMail')
         self.center()
         self.show()
+        self._update_search_size()
     
     def _init_toolbar(self):
-        toolbar_new_mail = QToolBar()
-        toolbar_new_mail.setMovable(False)
-        toolbar_new_mail.addAction("Написать")
-        self.addToolBar(Qt.TopToolBarArea, toolbar_new_mail)
+        self._toolbar = QToolBar()
+        self._toolbar.setMovable(False)
         
-        toolbar_search = QToolBar()
-        toolbar_search.setMovable(False)
-        search_edit = QLineEdit()
-        toolbar_search.addWidget(search_edit)
-        self.addToolBar(Qt.TopToolBarArea, toolbar_search)
+        self._toolbar.addAction("Написать")
         
-        toolbar_buttons = QToolBar()
-        toolbar_buttons.setMovable(False)
-        toolbar_buttons.addWidget(QPushButton("Раз кнопка"))
-        toolbar_buttons.addWidget(QPushButton("Два кнопка"))
-        self.addToolBar(Qt.TopToolBarArea, toolbar_buttons)
+        self._search_edit = QLineEdit()
+        self._toolbar.addWidget(self._search_edit)
+        
+        self._toolbar.addWidget(QPushButton("Раз кнопка"))
+        self._toolbar.addWidget(QPushButton("Два кнопка"))
+        
+        self.addToolBar(Qt.TopToolBarArea, self._toolbar)
+    
+    def _folders_widget(self):
+        folders = QTreeWidget()
+        folders.setMinimumWidth(200)
+        folders.header().close()
+        account1 = QTreeWidgetItem(folders, ["djaler1@gmail.com"])
+        inbox = QTreeWidgetItem(account1, ["Входящие"])
+        drafts = QTreeWidgetItem(account1, ["Черновики"])
+        sent = QTreeWidgetItem(account1, ["Отправленные"])
+        folders.expandToDepth(0)
+        return folders
+    
+    def _splitter_moved(self, pos, index):
+        if index != 2:
+            return
+        
+        self._update_search_size()
+    
+    def _update_search_size(self):
+        self._search_edit.setFixedWidth(
+            self._splitter.handle(2).pos().x() - self._search_edit.pos().x())
+    
+    def resizeEvent(self, event):
+        self._update_search_size()
     
     def center(self):
         qr = self.frameGeometry()
