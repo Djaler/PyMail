@@ -1,7 +1,7 @@
 from peewee import *
 
-from models.entities.base_entity import BaseEntity
-from models.entities.folder import Folder
+from database.entity.base_entity import BaseEntity
+from database.entity.folder import Folder
 
 
 class Mail(BaseEntity):

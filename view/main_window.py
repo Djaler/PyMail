@@ -1,6 +1,8 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
+from mail import imap
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -27,8 +29,8 @@ class MainWindow(QMainWindow):
         
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
-        self.center()
         self.show()
+        self.center()
         self._update_search_size()
     
     def _init_toolbar(self):
@@ -49,10 +51,8 @@ class MainWindow(QMainWindow):
         folders = QTreeWidget()
         folders.setMinimumWidth(200)
         folders.header().close()
-        account1 = QTreeWidgetItem(folders, ["djaler1@gmail.com"])
-        inbox = QTreeWidgetItem(account1, ["Входящие"])
-        drafts = QTreeWidgetItem(account1, ["Черновики"])
-        sent = QTreeWidgetItem(account1, ["Отправленные"])
+        for account in imap.accounts:
+            widget = QTreeWidgetItem(folders, [account.address])
         folders.expandToDepth(0)
         return folders
     
