@@ -1,9 +1,10 @@
 from getpass import getuser
 
-from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 
 
+# TODO Проверка подключения при добавлении
 class RegisterDialog(QDialog):
     def __init__(self):
         super().__init__()
@@ -32,6 +33,7 @@ class RegisterDialog(QDialog):
         main_layout.addRow("Сервер:", self._imap_host_edit)
         
         self._imap_port_edit = QLineEdit("993")
+        # TODO Установить верхнюю границу порта
         self._imap_port_edit.setValidator(QIntValidator())
         main_layout.addRow("Порт:", self._imap_port_edit)
         
