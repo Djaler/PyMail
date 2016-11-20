@@ -1,7 +1,7 @@
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from database.entity import *
+from database.entity import Folder, Mail
 from mail.mailer import Mailer
 
 
@@ -31,11 +31,9 @@ class MainWindow(QMainWindow):
                      self._folder_changed)
         self._splitter.addWidget(self._folders_widget)
 
-        mails_area = QScrollArea()
-        self._mails_layout = QVBoxLayout()
-        mails_area.setLayout(self._mails_layout)
-        self._splitter.addWidget(mails_area)
-
+        self._mails_widget = QListWidget()
+        self._splitter.addWidget(self._mails_widget)
+        
         mail_area = QScrollArea()
         self._splitter.addWidget(mail_area)
         
@@ -60,9 +58,9 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
     
     def _sync(self):
-        # self._mailer.sync()
-        # for account in self._mailer.get_accounts():
-        for account in Account.select():
+        self._mailer.sync()
+        for account in self._mailer.get_accounts():
+            # for account in Account.select():
             account_node = QTreeWidgetItem(self._folders_widget,
                                            [account.address])
             
@@ -75,7 +73,7 @@ class MainWindow(QMainWindow):
                     load_children(child, child_node)
             
             for folder in account.folders.select().where(
-                            Folder.parent == None):
+                    Folder.parent.is_null()):
                 folder_node = QTreeWidgetItem([folder.name])
                 
                 account_node.addChild(folder_node)
@@ -91,18 +89,18 @@ class MainWindow(QMainWindow):
         self._clear_folder()
         
         folder_name = self._folders_widget.currentItem().text(0)
-        
-        for email in Mail.select().where(Mail.folder == Folder.get(
-                        Folder.name == folder_name)).order_by(Mail.id.desc()):
-            
+
+        current_folder = Folder.get(Folder.name == folder_name)
+
+        emails = Mail.select().where(Mail.folder == current_folder).order_by(
+            Mail.uid.desc())
+
+        for email in emails:
             message = MessageWidget(email.sender, email.subject)
-            self._mails_layout.addWidget(message)
+            self._mails_widget.addItem(message)
     
     def _clear_folder(self):
-        for i in reversed(range(self._mails_layout.count())):
-            widget_to_remove = self._mails_layout.itemAt(i).widget()
-            self._mails_layout.removeWidget(widget_to_remove)
-            widget_to_remove.setParent(None)
+        self._mails_widget.clear()
     
     def _splitter_moved(self, pos, index):
         self._update_search_size()
@@ -121,22 +119,8 @@ class MainWindow(QMainWindow):
         self.move(qr.topLeft())
 
 
-class MessageWidget(QWidget):
+class MessageWidget(QListWidgetItem):
     def __init__(self, sender, subject):
         super().__init__()
-        
-        self._sender = sender
-        self._subject = subject
-        
-        self._init_ui()
-    
-    def _init_ui(self):
-        layout = QVBoxLayout()
-        
-        sender_label = QLabel(self._sender)
-        layout.addWidget(sender_label)
-        
-        subject_label = QLabel(self._subject)
-        layout.addWidget(subject_label)
-        
-        self.setLayout(layout)
+
+        self.setText("\n".join([sender, subject]))

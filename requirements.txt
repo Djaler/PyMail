@@ -1,3 +1,4 @@
+easyimap
 peewee
 imapy
 outbox
