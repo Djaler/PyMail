@@ -1,6 +1,7 @@
 from sys import argv, exit
 
-from PyQt4.QtGui import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from database.entity import init_database, Account
 from view import MainWindow, RegisterDialog

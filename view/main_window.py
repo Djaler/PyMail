@@ -1,10 +1,12 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWebKitWidgets import *
+from PyQt5.QtWidgets import *
 
 from database.entity import Folder, Mail
 from mail.mailer import Mailer
 
 
+# noinspection PyUnusedLocal
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -20,22 +22,21 @@ class MainWindow(QMainWindow):
         
         self._splitter = QSplitter()
         self._splitter.setChildrenCollapsible(False)
-        self.connect(self._splitter, SIGNAL('splitterMoved(int, int)'),
-                     self._splitter_moved)
+        self._splitter.splitterMoved.connect(self._splitter_moved)
         self.setCentralWidget(self._splitter)
 
         self._folders_widget = QTreeWidget()
         self._folders_widget.setMinimumWidth(200)
         self._folders_widget.header().close()
-        self.connect(self._folders_widget, SIGNAL('itemSelectionChanged()'),
-                     self._folder_changed)
+        self._folders_widget.itemSelectionChanged.connect(self._folder_changed)
         self._splitter.addWidget(self._folders_widget)
 
         self._mails_widget = QListWidget()
+        self._mails_widget.itemSelectionChanged.connect(self._mail_changed)
         self._splitter.addWidget(self._mails_widget)
-        
-        mail_area = QScrollArea()
-        self._splitter.addWidget(mail_area)
+
+        self._mail_area = QWebView()
+        self._splitter.addWidget(self._mail_area)
         
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
@@ -96,8 +97,14 @@ class MainWindow(QMainWindow):
             Mail.uid.desc())
 
         for email in emails:
-            message = MessageWidget(email.sender, email.subject)
+            message = MessageWidget(email)
             self._mails_widget.addItem(message)
+
+    def _mail_changed(self):
+        current_id = self._mails_widget.currentItem().data(Qt.UserRole)
+    
+        current_mail = Mail.get(Mail.id == current_id)
+        self._mail_area.setHtml(current_mail.body)
     
     def _clear_folder(self):
         self._mails_widget.clear()
@@ -120,7 +127,8 @@ class MainWindow(QMainWindow):
 
 
 class MessageWidget(QListWidgetItem):
-    def __init__(self, sender, subject):
+    def __init__(self, email):
         super().__init__()
 
-        self.setText("\n".join([sender, subject]))
+        self.setText("\n".join([email.sender, email.subject]))
+        self.setData(Qt.UserRole, email.id)

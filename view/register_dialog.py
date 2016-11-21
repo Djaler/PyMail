@@ -1,7 +1,8 @@
 from getpass import getuser
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 
 # TODO Проверка подключения при добавлении
@@ -57,10 +58,10 @@ class RegisterDialog(QDialog):
         
         buttons_layout = QHBoxLayout()
         cancel_button = QPushButton("Отмена")
-        self.connect(cancel_button, SIGNAL('pressed()'), self.reject)
+        cancel_button.pressed.connect(self.reject)
         buttons_layout.addWidget(cancel_button)
         self._add_button = QPushButton("Добавить")
-        self.connect(self._add_button, SIGNAL('pressed()'), self.accept)
+        self._add_button.pressed.connect(self.accept)
         buttons_layout.addWidget(self._add_button)
         main_layout.addRow(buttons_layout)
         
@@ -69,8 +70,7 @@ class RegisterDialog(QDialog):
                         self._imap_port_edit, self._smtp_host_edit,
                         self._smtp_port_edit]
         for field in self._fields:
-            self.connect(field, SIGNAL('textChanged(QString)'),
-                         self._on_field_changed)
+            field.textChanged.connect(self._on_field_changed)
         
         self._on_field_changed()
         
