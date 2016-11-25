@@ -2,20 +2,52 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtWidgets import *
 
-from database.entity import Folder, Mail
-from mail.mailer import Mailer
+from database.entity import Mail
 
 
 # noinspection PyUnusedLocal
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, controller):
         super().__init__()
 
-        self._mailer = Mailer()
+        self._controller = controller
+        self._controller.set_view(self)
         
         self._init_ui()
 
-        self._sync()
+        self._controller.sync()
+    
+    def update_folders_tree(self, accounts):
+        def load_children(folders, parent_node):
+            for folder, children in folders.items():
+                folder_node = QTreeWidgetItem(parent_node, [folder])
+                
+                load_children(children, folder_node)
+        
+        for account, folders in accounts.items():
+            account_node = QTreeWidgetItem(self._folders_widget, [account])
+            
+            load_children(folders, account_node)
+        
+        self._folders_widget.expandToDepth(-1)
+    
+    def clear_mails_widget(self):
+        self._mails_widget.clear()
+    
+    def add_mail(self, mail: Mail):
+        message = MessageWidget(mail)
+        self._mails_widget.addItem(message)
+    
+    @property
+    def current_folder(self):
+        return self._folders_widget.currentItem().text(0)
+    
+    @property
+    def current_mail_id(self):
+        return self._mails_widget.currentItem().data(Qt.UserRole)
+    
+    def set_mail_body(self, body):
+        self._mail_area.setHtml(body)
     
     def _init_ui(self):
         self._init_toolbar()
@@ -28,11 +60,13 @@ class MainWindow(QMainWindow):
         self._folders_widget = QTreeWidget()
         self._folders_widget.setMinimumWidth(200)
         self._folders_widget.header().close()
-        self._folders_widget.itemSelectionChanged.connect(self._folder_changed)
+        self._folders_widget.itemSelectionChanged.connect(
+            self._controller.folder_changed)
         self._splitter.addWidget(self._folders_widget)
 
         self._mails_widget = QListWidget()
-        self._mails_widget.itemSelectionChanged.connect(self._mail_changed)
+        self._mails_widget.itemSelectionChanged.connect(
+            self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
 
         self._mail_area = QWebView()
@@ -57,57 +91,6 @@ class MainWindow(QMainWindow):
         self._toolbar.addWidget(QPushButton("Два кнопка"))
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
-    
-    def _sync(self):
-        self._mailer.sync()
-        for account in self._mailer.get_accounts():
-            # for account in Account.select():
-            account_node = QTreeWidgetItem(self._folders_widget,
-                                           [account.address])
-            
-            def load_children(parent_folder, parent_node):
-                for child in parent_folder.folders:
-                    child_node = QTreeWidgetItem([child.name])
-                    
-                    parent_node.addChild(child_node)
-                    
-                    load_children(child, child_node)
-            
-            for folder in account.folders.select().where(
-                    Folder.parent.is_null()):
-                folder_node = QTreeWidgetItem([folder.name])
-                
-                account_node.addChild(folder_node)
-                
-                load_children(folder, folder_node)
-        
-        self._folders_widget.expandToDepth(-1)
-    
-    def _folder_changed(self):
-        if not self._folders_widget.currentItem().parent():
-            return
-        
-        self._clear_folder()
-        
-        folder_name = self._folders_widget.currentItem().text(0)
-
-        current_folder = Folder.get(Folder.name == folder_name)
-
-        emails = Mail.select().where(Mail.folder == current_folder).order_by(
-            Mail.uid.desc())
-
-        for email in emails:
-            message = MessageWidget(email)
-            self._mails_widget.addItem(message)
-
-    def _mail_changed(self):
-        current_id = self._mails_widget.currentItem().data(Qt.UserRole)
-    
-        current_mail = Mail.get(Mail.id == current_id)
-        self._mail_area.setHtml(current_mail.body)
-    
-    def _clear_folder(self):
-        self._mails_widget.clear()
     
     def _splitter_moved(self, pos, index):
         self._update_search_size()
