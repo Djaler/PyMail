@@ -1,3 +1,4 @@
+import email
 import locale
 import sys
 from datetime import datetime, timedelta
@@ -16,8 +17,8 @@ def load_emails(folder: Folder):
                                   ssl=account.imap_ssl)
     
     connection.change_mailbox(_to_utf_7(folder.name))
-    
-    past = datetime.now() - timedelta(weeks=4)
+
+    past = datetime.now() - timedelta(weeks=2)
     
     locale.setlocale(locale.LC_TIME, ("en_US", "UTF-8"))
     date_criterion = '(SINCE "{}")'.format(past.strftime("%d-%b-%Y"))
@@ -34,12 +35,29 @@ def load_emails(folder: Folder):
     
     for id_ in ids_on_server:
         if id_ not in local_ids:
-            mail = connection.mail(str(id_).encode())
-            
-            Mail.create(uid=id_, folder=folder, body=mail.body,
-                        subject=mail.title, recipient=mail.to,
-                        sender=mail.from_addr, datetime=mail.date)
+            mail = connection.mail(str(id_).encode(), include_raw=True)
+    
+            body = mail.body
+            if r'\u' in body:
+                raw_mail = email.message_from_string(mail.raw.decode('utf-8'))
+                body = _get_body(raw_mail)
+    
+            Mail.create(uid=id_, folder=folder, body=body, subject=mail.title,
+                        recipient=mail.to, sender=mail.from_addr,
+                        datetime=mail.date)
     connection.quit()
+
+
+def _get_body(message):
+    for part in message.walk():
+        maintype = part.get_content_maintype()
+        if maintype != 'multipart' and not part.get_filename():
+            return part.get_payload()
+        if maintype == 'multipart':
+            for p in part.get_payload():
+                if p.get_content_maintype() == 'text':
+                    return p.get_payload()
+    raise Exception("Something happened.")
 
 
 def _to_utf_7(name):
