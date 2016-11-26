@@ -1,4 +1,5 @@
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtWidgets import *
 
@@ -70,6 +71,9 @@ class MainWindow(QMainWindow):
         self._splitter.addWidget(self._mails_widget)
 
         self._mail_area = QWebView()
+        self._mail_area.page().setLinkDelegationPolicy(
+            QWebPage.DelegateAllLinks)
+        self._mail_area.linkClicked.connect(self._open_link)
         self._splitter.addWidget(self._mail_area)
         
         self.resize(700, 500)
@@ -77,6 +81,10 @@ class MainWindow(QMainWindow):
         self.show()
         self.center()
         self._update_search_size()
+
+    @staticmethod
+    def _open_link(url):
+        QDesktopServices.openUrl(url)
     
     def _init_toolbar(self):
         self._toolbar = QToolBar()

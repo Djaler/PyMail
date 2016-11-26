@@ -1,6 +1,7 @@
+import re
 from collections import OrderedDict
 
-from database.entity import Account, Folder, Mail
+from database.entity import Folder, Mail
 from mail.mailer import Mailer
 
 
@@ -14,10 +15,10 @@ class MainController:
     
     def sync(self):
         accounts = OrderedDict()
-        
-        # self._mailer.sync()
-        # for account in self._mailer.get_accounts():
-        for account in Account.select():
+
+        self._mailer.sync()
+        for account in self._mailer.get_accounts():
+            # for account in Account.select():
             accounts[account.address] = OrderedDict()
             
             def load_children(parent_folder, parent_node):
@@ -55,5 +56,14 @@ class MainController:
         current_id = self._view.current_mail_id
         
         current_mail = Mail.get(Mail.id == current_id)
-        
-        self._view.set_mail_body(current_mail.body)
+
+        body = current_mail.body
+        if not current_mail.is_html:
+            body = "<br/>".join(body.splitlines())
+    
+            url_pattern = re.compile(
+                '((https?://)?([\w.]+)\.([a-z]{2,6}\.?)(/[\w\-+]*)*/?)')
+    
+            body = url_pattern.sub(r'<a href="\1">\1</a>', body)
+
+        self._view.set_mail_body(body)

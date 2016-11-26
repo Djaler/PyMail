@@ -12,3 +12,4 @@ class Mail(BaseEntity):
     recipient = TextField()
     sender = TextField()
     datetime = DateTimeField()
+    is_html = BooleanField()

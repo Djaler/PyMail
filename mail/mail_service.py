@@ -1,5 +1,8 @@
+import base64
 import email
 import locale
+import quopri
+import re
 import sys
 from datetime import datetime, timedelta
 
@@ -7,6 +10,8 @@ import easyimap
 from imapy import utils
 
 from database.entity import Folder, Mail
+
+_charset_pattern = re.compile('charset\s*=\s*"?([\w-]+)"?')
 
 
 def load_emails(folder: Folder):
@@ -36,28 +41,53 @@ def load_emails(folder: Folder):
     for id_ in ids_on_server:
         if id_ not in local_ids:
             mail = connection.mail(str(id_).encode(), include_raw=True)
-    
-            body = mail.body
-            if r'\u' in body:
-                raw_mail = email.message_from_string(mail.raw.decode('utf-8'))
-                body = _get_body(raw_mail)
-    
+
+            try:
+                encoding = _charset_pattern.search(mail.content_type).group(1)
+            except (IndexError, AttributeError):
+                encoding = "utf-8"
+            raw_mail = email.message_from_string(mail.raw.decode(encoding))
+            body, is_html = _get_body(raw_mail)
+            
             Mail.create(uid=id_, folder=folder, body=body, subject=mail.title,
                         recipient=mail.to, sender=mail.from_addr,
-                        datetime=mail.date)
+                        datetime=mail.date, is_html=is_html)
     connection.quit()
 
 
 def _get_body(message):
+    is_html = True
     for part in message.walk():
-        maintype = part.get_content_maintype()
-        if maintype != 'multipart' and not part.get_filename():
-            return part.get_payload()
-        if maintype == 'multipart':
-            for p in part.get_payload():
-                if p.get_content_maintype() == 'text':
-                    return p.get_payload()
-    raise Exception("Something happened.")
+        if part.get_content_type() == 'text/html':
+            body_part = part
+            break
+    else:
+        for part in message.walk():
+            if part.get_content_type() == 'text/plain':
+                body_part = part
+                is_html = False
+                break
+        else:
+            raise Exception("Something happened.")
+    
+    body = body_part.get_payload()
+    
+    if body_part.get("Content-Transfer-Encoding") == "quoted-printable":
+        try:
+            body = quopri.decodestring(body)
+            encoding = _charset_pattern.search(
+                body_part.get("Content-Type")).group(1)
+            body = body.decode(encoding)
+        except ValueError:
+            pass
+    
+    if body_part.get("Content-Transfer-Encoding") == "base64":
+        body = base64.b64decode(body)
+        encoding = _charset_pattern.search(
+            body_part.get("Content-Type")).group(1)
+        body = body.decode(encoding)
+    
+    return body, is_html
 
 
 def _to_utf_7(name):
