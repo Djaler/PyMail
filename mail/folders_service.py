@@ -30,33 +30,44 @@ def folder_(self, folder_name=''):
 IMAP.folder = folder_
 
 
-def load_folders(account: Account):
-    # TODO Удаление папок, отсутствующих на сервере
-    connection = imapy.connect(host=account.imap_host, port=account.imap_port,
-                               username=account.address,
-                               password=account.password, ssl=account.imap_ssl)
+class FolderService:
+    def __init__(self, account: Account):
+        self._account = account
     
-    top_level_folders = [folder for folder in connection.folders() if
-                         connection.separator not in folder]
+    def __enter__(self):
+        self._connection = imapy.connect(host=self._account.imap_host,
+                                         port=self._account.imap_port,
+                                         username=self._account.address,
+                                         password=self._account.password,
+                                         ssl=self._account.imap_ssl)
+        return self
     
-    def load_children(parent_folder, parent_name):
-        for child in connection.folder(parent_name).children():
-            child_folder, _ = Folder.create_or_get(name=child, account=account,
-                                                   parent=parent_folder)
-            
-            if not connection.folder(child).info()['uidnext']:
-                child_folder.with_emails = False
-                child_folder.save()
-            
-            load_children(child_folder, child)
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._connection.logout()
     
-    for folder in top_level_folders:
-        new_folder, _ = Folder.create_or_get(name=folder, account=account)
+    def load_folders(self):
+        # TODO Удаление папок, отсутствующих на сервере
+        top_level_folders = [folder for folder in self._connection.folders() if
+                             self._connection.separator not in folder]
         
-        if not connection.folder(folder).info()['uidnext']:
-            new_folder.with_emails = False
-            new_folder.save()
+        def load_children(parent_folder, parent_name):
+            for child in self._connection.folder(parent_name).children():
+                child_folder, _ = Folder.create_or_get(name=child,
+                                                       account=self._account,
+                                                       parent=parent_folder)
+                
+                if not self._connection.folder(child).info()['uidnext']:
+                    child_folder.with_emails = False
+                    child_folder.save()
+                
+                load_children(child_folder, child)
         
-        load_children(new_folder, folder)
-    
-    connection.logout()
+        for folder in top_level_folders:
+            new_folder, _ = Folder.create_or_get(name=folder,
+                                                 account=self._account)
+            
+            if not self._connection.folder(folder).info()['uidnext']:
+                new_folder.with_emails = False
+                new_folder.save()
+            
+            load_children(new_folder, folder)

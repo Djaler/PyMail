@@ -1,5 +1,5 @@
-from database.entity import Account, Folder
-from mail import folders_service, mail_service
+from database.entity import Account
+from mail import FolderService, MailService
 
 
 class Mailer:
@@ -12,10 +12,10 @@ class Mailer:
     def sync(self):
         self._accounts = list(Account.select())
         for account in self._accounts:
-            folders_service.load_folders(account)
+            with FolderService(account) as folder_service:
+                folder_service.load_folders()
     
-        folders = Folder.select()
-    
-        for folder in folders:
-            if folder.with_emails:
-                mail_service.load_emails(folder)
+            with MailService(account) as mail_service:
+                for folder in account.folders:
+                    if folder.with_emails:
+                        mail_service.load_emails(folder)
