@@ -46,13 +46,18 @@ class FolderService:
         self._connection.logout()
     
     def load_folders(self):
-        # TODO Удаление папок, отсутствующих на сервере
-        top_level_folders = [folder for folder in self._connection.folders() if
+        folders = self._connection.folders()
+    
+        for folder in self._account.folders:
+            if folder.name not in folders:
+                folder.delete_instance(recursive=True)
+    
+        top_level_folders = [folder for folder in folders if
                              self._connection.separator not in folder]
         
         def load_children(parent_folder, parent_name):
             for child in self._connection.folder(parent_name).children():
-                child_folder, _ = Folder.create_or_get(name=child,
+                child_folder, _ = Folder.get_or_create(name=child,
                                                        account=self._account,
                                                        parent=parent_folder)
                 
@@ -63,7 +68,7 @@ class FolderService:
                 load_children(child_folder, child)
         
         for folder in top_level_folders:
-            new_folder, _ = Folder.create_or_get(name=folder,
+            new_folder, _ = Folder.get_or_create(name=folder,
                                                  account=self._account)
             
             if not self._connection.folder(folder).info()['uidnext']:
