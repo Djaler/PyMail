@@ -9,3 +9,8 @@ class Folder(BaseEntity):
     parent = ForeignKeyField('self', null=True, related_name='folders')
     account = ForeignKeyField(Account, related_name="folders")
     with_emails = BooleanField(default=True)
+
+    class Meta:
+        db_table = 'folders'
+    
+        indexes = ((('name', 'parent', 'account'), True),)

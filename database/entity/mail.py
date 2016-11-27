@@ -13,3 +13,6 @@ class Mail(BaseEntity):
     sender = TextField()
     datetime = DateTimeField()
     is_html = BooleanField()
+
+    class Meta:
+        db_table = 'mails'

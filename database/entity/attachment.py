@@ -8,3 +8,6 @@ class Attachment(BaseEntity):
     name = TextField(unique=True)
     mail = ForeignKeyField(Mail, related_name="attachments")
     path = TextField()
+
+    class Meta:
+        db_table = 'attachments'

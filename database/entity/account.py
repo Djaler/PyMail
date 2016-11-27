@@ -28,3 +28,6 @@ class Account(BaseEntity):
     @property
     def password(self):
         return keyring.get_password("PyMail", self.address)
+
+    class Meta:
+        db_table = 'accounts'
