@@ -59,11 +59,11 @@ class MainController:
 
         body = current_mail.body
         if not current_mail.is_html:
-            body = "<br/>".join(body.splitlines())
-    
+            body = "<br/>\n".join(body.splitlines())
+            
             url_pattern = re.compile(
-                '((https?://)?([\w.]+)\.([a-z]{2,6}\.?)(/[\w\-+]*)*/?)')
-    
+                '((https?://)?([\w.]+)\.([a-z]{2,6}\.?)(/[^\s]*)*/?)')
+            
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
         self._view.set_mail_body(body)
