@@ -24,11 +24,11 @@ class MainWindow(QMainWindow):
                 folder_node = QTreeWidgetItem(parent_node, [folder])
                 
                 load_children(children, folder_node)
-        
-        for account, folders in accounts.items():
+
+        for account, top_folders in accounts.items():
             account_node = QTreeWidgetItem(self._folders_widget, [account])
-            
-            load_children(folders, account_node)
+
+            load_children(top_folders, account_node)
         
         self._folders_widget.expandToDepth(-1)
     
@@ -46,9 +46,20 @@ class MainWindow(QMainWindow):
     @property
     def current_mail_id(self):
         return self._mails_widget.currentItem().data(Qt.UserRole)
-    
-    def set_mail_body(self, body):
+
+    def set_mail(self, from_, to, subject, body):
+        self._from_label.setText(from_)
+        self._to_label.setText(to)
+        self._subject_label.setText(subject)
         self._mail_area.setHtml(body)
+
+    def select_first_folder(self):
+        first_account = self._folders_widget.topLevelItem(0)
+    
+        self._folders_widget.setCurrentItem(first_account.child(0))
+
+    def select_first_mail(self):
+        self._mails_widget.setCurrentRow(0)
     
     def _init_ui(self):
         self._init_toolbar()
@@ -70,21 +81,40 @@ class MainWindow(QMainWindow):
             self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
 
-        self._mail_area = QWebView()
-        self._mail_area.page().setLinkDelegationPolicy(
-            QWebPage.DelegateAllLinks)
-        self._mail_area.linkClicked.connect(self._open_link)
-        self._splitter.addWidget(self._mail_area)
+        self._init_mail_widget()
         
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
-        self.show()
+        self.showMaximized()
         self.center()
         self._update_search_size()
 
     @staticmethod
     def _open_link(url):
-        QDesktopServices.openUrl(url)
+        QDesktopServices().openUrl(url)
+
+    def _init_mail_widget(self):
+        mail_widget = QWidget()
+        mail_layout = QVBoxLayout()
+        mail_widget.setLayout(mail_layout)
+    
+        header_layout = QFormLayout()
+        self._from_label = QLineEdit()
+        header_layout.addRow("От:", self._from_label)
+        self._to_label = QLineEdit()
+        header_layout.addRow("Кому:", self._to_label)
+        self._subject_label = QLabel()
+        self._subject_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        header_layout.addRow("Тема:", self._subject_label)
+        mail_layout.addLayout(header_layout)
+    
+        self._mail_area = QWebView()
+        self._mail_area.page().setLinkDelegationPolicy(
+            QWebPage.DelegateAllLinks)
+        self._mail_area.linkClicked.connect(self._open_link)
+    
+        mail_layout.addWidget(self._mail_area)
+        self._splitter.addWidget(mail_widget)
     
     def _init_toolbar(self):
         self._toolbar = QToolBar()
@@ -94,9 +124,9 @@ class MainWindow(QMainWindow):
         
         self._search_edit = QLineEdit()
         self._toolbar.addWidget(self._search_edit)
-        
-        self._toolbar.addWidget(QPushButton("Раз кнопка"))
-        self._toolbar.addWidget(QPushButton("Два кнопка"))
+
+        # self._toolbar.addWidget(QPushButton("Раз кнопка"))
+        # self._toolbar.addWidget(QPushButton("Два кнопка"))
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
     

@@ -13,7 +13,6 @@ class Account(BaseEntity):
     smtp_host = TextField()
     smtp_port = IntegerField()
     smtp_ssl = BooleanField()
-    last_sync = DateTimeField(null=True)
     
     def __init__(self, *args, password=None, **kwargs):
         super().__init__(*args, **kwargs)

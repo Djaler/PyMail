@@ -47,7 +47,7 @@ class FolderService:
     
     def load_folders(self):
         folders = self._connection.folders()
-    
+
         for folder in self._account.folders:
             if folder.name not in folders:
                 folder.delete_instance(recursive=True)

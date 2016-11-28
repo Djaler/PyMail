@@ -34,6 +34,8 @@ class MainController:
                 load_children(folder, accounts[account.address][folder.name])
         
         self._view.update_folders_tree(accounts)
+
+        self._view.select_first_folder()
     
     def folder_changed(self):
         self._view.clear_mails_widget()
@@ -51,12 +53,18 @@ class MainController:
         
         for email in emails:
             self._view.add_mail(email)
+
+        self._view.select_first_mail()
     
     def mail_changed(self):
         current_id = self._view.current_mail_id
         
         current_mail = Mail.get(Mail.id == current_id)
 
+        from_ = current_mail.sender
+        to = current_mail.recipient
+        subject = current_mail.subject
+        
         body = current_mail.body
         if not current_mail.is_html:
             body = "<br/>\n".join(body.splitlines())
@@ -66,4 +74,4 @@ class MainController:
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
-        self._view.set_mail_body(body)
+        self._view.set_mail(from_, to, subject, body)
