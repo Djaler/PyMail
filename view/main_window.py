@@ -2,8 +2,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtWidgets import *
+from auto_resizing_text_edit import AutoResizingTextEdit
 
+from controller.send_controller import SendController
 from database.entity import Mail
+from view.send_dialog import SendDialog
 
 
 # noinspection PyUnusedLocal
@@ -87,7 +90,6 @@ class MainWindow(QMainWindow):
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
         self.showMaximized()
-        self.center()
         self._update_search_size()
 
     @staticmethod
@@ -100,17 +102,17 @@ class MainWindow(QMainWindow):
         mail_widget.setLayout(mail_layout)
 
         header_layout = QFormLayout()
-        self._from_label = QLabel()
-        self._from_label.setWordWrap(True)
-        self._from_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self._from_label = AutoResizingTextEdit()
+        self._from_label.setMinimumLines(1)
+        self._from_label.setReadOnly(True)
         header_layout.addRow("От:", self._from_label)
-        self._to_label = QLabel()
-        self._to_label.setWordWrap(True)
-        self._to_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self._to_label = AutoResizingTextEdit()
+        self._to_label.setMinimumLines(1)
+        self._to_label.setReadOnly(True)
         header_layout.addRow("Кому:", self._to_label)
-        self._subject_label = QLabel()
-        self._subject_label.setWordWrap(True)
-        self._subject_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self._subject_label = AutoResizingTextEdit()
+        self._subject_label.setMinimumLines(1)
+        self._subject_label.setReadOnly(True)
         header_layout.addRow("Тема:", self._subject_label)
         mail_layout.addLayout(header_layout)
 
@@ -125,8 +127,8 @@ class MainWindow(QMainWindow):
     def _init_toolbar(self):
         self._toolbar = QToolBar()
         self._toolbar.setMovable(False)
-        
-        self._toolbar.addAction("Написать")
+
+        self._toolbar.addAction("Написать", self._open_send_dialog)
         
         self._search_edit = QLineEdit()
         self._toolbar.addWidget(self._search_edit)
@@ -135,6 +137,12 @@ class MainWindow(QMainWindow):
         # self._toolbar.addWidget(QPushButton("Два кнопка"))
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
+
+    @staticmethod
+    def _open_send_dialog():
+        send_controller = SendController()
+        send_dialog = SendDialog(send_controller)
+        send_dialog.exec()
     
     def _splitter_moved(self, pos, index):
         self._update_search_size()
@@ -145,12 +153,6 @@ class MainWindow(QMainWindow):
     
     def resizeEvent(self, event):
         self._update_search_size()
-    
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
 
 
 class MessageWidget(QListWidgetItem):

@@ -1,17 +1,15 @@
 import re
 from collections import OrderedDict
 
+from controller.base_controller import BaseController
 from database.entity import Folder, Mail
 from mail.mailer import Mailer
 
 
-class MainController:
+class MainController(BaseController):
     def __init__(self):
-        self._view = None
+        super().__init__()
         self._mailer = Mailer()
-    
-    def set_view(self, view):
-        self._view = view
     
     def sync(self):
         accounts = OrderedDict()
