@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
 
     def select_first_folder(self):
         first_account = self._folders_widget.topLevelItem(0)
-    
+
         self._folders_widget.setCurrentItem(first_account.child(0))
 
     def select_first_mail(self):
@@ -77,6 +77,7 @@ class MainWindow(QMainWindow):
         self._splitter.addWidget(self._folders_widget)
 
         self._mails_widget = QListWidget()
+        self._mails_widget.setMinimumWidth(200)
         self._mails_widget.itemSelectionChanged.connect(
             self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
@@ -97,22 +98,27 @@ class MainWindow(QMainWindow):
         mail_widget = QWidget()
         mail_layout = QVBoxLayout()
         mail_widget.setLayout(mail_layout)
-    
+
         header_layout = QFormLayout()
-        self._from_label = QLineEdit()
+        self._from_label = QLabel()
+        self._from_label.setWordWrap(True)
+        self._from_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         header_layout.addRow("От:", self._from_label)
-        self._to_label = QLineEdit()
+        self._to_label = QLabel()
+        self._to_label.setWordWrap(True)
+        self._to_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         header_layout.addRow("Кому:", self._to_label)
         self._subject_label = QLabel()
+        self._subject_label.setWordWrap(True)
         self._subject_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         header_layout.addRow("Тема:", self._subject_label)
         mail_layout.addLayout(header_layout)
-    
+
         self._mail_area = QWebView()
         self._mail_area.page().setLinkDelegationPolicy(
             QWebPage.DelegateAllLinks)
         self._mail_area.linkClicked.connect(self._open_link)
-    
+
         mail_layout.addWidget(self._mail_area)
         self._splitter.addWidget(mail_widget)
     

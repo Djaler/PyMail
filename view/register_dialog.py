@@ -33,8 +33,7 @@ class RegisterDialog(QDialog):
         main_layout.addRow("Сервер:", self._imap_host_edit)
         
         self._imap_port_edit = QLineEdit("993")
-        # TODO Установить верхнюю границу порта
-        self._imap_port_edit.setValidator(QIntValidator())
+        self._imap_port_edit.setValidator(QIntValidator(1, 65535))
         main_layout.addRow("Порт:", self._imap_port_edit)
         
         self._imap_ssl_checkbox = QCheckBox()
@@ -48,7 +47,7 @@ class RegisterDialog(QDialog):
         main_layout.addRow("Сервер:", self._smtp_host_edit)
         
         self._smtp_port_edit = QLineEdit("465")
-        self._smtp_port_edit.setValidator(QIntValidator())
+        self._smtp_port_edit.setValidator(QIntValidator(1, 65535))
         main_layout.addRow("Порт:", self._smtp_port_edit)
         
         self._smtp_ssl_checkbox = QCheckBox()
