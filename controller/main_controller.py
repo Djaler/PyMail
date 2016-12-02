@@ -2,38 +2,44 @@ import re
 from collections import OrderedDict
 
 from controller.base_controller import BaseController
-from database.entity import Folder, Mail
-from mail.mailer import Mailer
+from database.entity import Account, Folder, Mail
+from mail.mailer import sync
 
 
 class MainController(BaseController):
     def __init__(self):
         super().__init__()
-        self._mailer = Mailer()
+
+        self._accounts = list(Account.select())
+
+        self._current_account = None
+
+    def account_changed(self, current_index):
+        self._current_account = self._accounts[current_index]
     
-    def sync(self):
-        accounts = OrderedDict()
-
-        self._mailer.sync()
-        for account in self._mailer.get_accounts():
-            # for account in Account.select():
-            accounts[account.address] = OrderedDict()
+        folders = OrderedDict()
+    
+        def load_children(parent_folder, parent_node):
+            for child in parent_folder.folders:
+                parent_node[child.name] = OrderedDict()
             
-            def load_children(parent_folder, parent_node):
-                for child in parent_folder.folders:
-                    parent_node[child.name] = OrderedDict()
-                    
-                    load_children(child, parent_node[child.name])
-            
-            for folder in account.folders.select().where(
-                    Folder.parent.is_null()):
-                accounts[account.address][folder.name] = OrderedDict()
-                
-                load_children(folder, accounts[account.address][folder.name])
+                load_children(child, parent_node[child.name])
+    
+        for folder in self._current_account.folders.select().where(
+                Folder.parent.is_null()):
+            folders[folder.name] = OrderedDict()
         
-        self._view.update_folders_tree(accounts)
-
+            load_children(folder, folders[folder.name])
+    
+        self._view.update_folders_tree(folders)
+        
         self._view.select_first_folder()
+
+    def set_accounts(self):
+        self._view.set_accounts(account.address for account in self._accounts)
+
+    def sync(self):
+        sync(self._current_account)
     
     def folder_changed(self):
         self._view.clear_mails_widget()
@@ -41,7 +47,7 @@ class MainController(BaseController):
         folder_name = self._view.current_folder
         
         try:
-            current_folder = Folder.select().where(
+            current_folder = self._current_account.folders.select().where(
                 (Folder.name == folder_name) & (Folder.with_emails == 1))[0]
         except IndexError:
             return

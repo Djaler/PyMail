@@ -19,50 +19,7 @@ class MainWindow(QMainWindow):
         
         self._init_ui()
 
-        self._controller.sync()
-    
-    def update_folders_tree(self, accounts):
-        def load_children(folders, parent_node):
-            for folder, children in folders.items():
-                folder_node = QTreeWidgetItem(parent_node, [folder])
-                
-                load_children(children, folder_node)
-
-        for account, top_folders in accounts.items():
-            account_node = QTreeWidgetItem(self._folders_widget, [account])
-
-            load_children(top_folders, account_node)
-        
-        self._folders_widget.expandToDepth(-1)
-    
-    def clear_mails_widget(self):
-        self._mails_widget.clear()
-    
-    def add_mail(self, mail: Mail):
-        message = MessageWidget(mail)
-        self._mails_widget.addItem(message)
-    
-    @property
-    def current_folder(self):
-        return self._folders_widget.currentItem().text(0)
-    
-    @property
-    def current_mail_id(self):
-        return self._mails_widget.currentItem().data(Qt.UserRole)
-
-    def set_mail(self, from_, to, subject, body):
-        self._from_label.setText(from_)
-        self._to_label.setText(to)
-        self._subject_label.setText(subject)
-        self._mail_area.setHtml(body)
-
-    def select_first_folder(self):
-        first_account = self._folders_widget.topLevelItem(0)
-
-        self._folders_widget.setCurrentItem(first_account.child(0))
-
-    def select_first_mail(self):
-        self._mails_widget.setCurrentRow(0)
+        self._controller.set_accounts()
     
     def _init_ui(self):
         self._init_toolbar()
@@ -92,10 +49,6 @@ class MainWindow(QMainWindow):
         self.showMaximized()
         self._update_search_size()
 
-    @staticmethod
-    def _open_link(url):
-        QDesktopServices().openUrl(url)
-
     def _init_mail_widget(self):
         mail_widget = QWidget()
         mail_layout = QVBoxLayout()
@@ -119,8 +72,9 @@ class MainWindow(QMainWindow):
         self._mail_area = QWebView()
         self._mail_area.page().setLinkDelegationPolicy(
             QWebPage.DelegateAllLinks)
-        self._mail_area.linkClicked.connect(self._open_link)
-
+        self._mail_area.linkClicked.connect(
+            lambda url: QDesktopServices().openUrl(url))
+        
         mail_layout.addWidget(self._mail_area)
         self._splitter.addWidget(mail_widget)
     
@@ -128,6 +82,13 @@ class MainWindow(QMainWindow):
         self._toolbar = QToolBar()
         self._toolbar.setMovable(False)
 
+        self._accounts_combobox = QComboBox()
+        self._accounts_combobox.currentIndexChanged.connect(
+            self._controller.account_changed)
+        self._toolbar.addWidget(self._accounts_combobox)
+
+        self._toolbar.addAction("Синхронизировать", self._controller.sync)
+        
         self._toolbar.addAction("Написать", self._open_send_dialog)
         
         self._search_edit = QLineEdit()
@@ -138,6 +99,49 @@ class MainWindow(QMainWindow):
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 
+    @property
+    def current_folder(self):
+        return self._folders_widget.currentItem().text(0)
+
+    @property
+    def current_mail_id(self):
+        return self._mails_widget.currentItem().data(Qt.UserRole)
+
+    def set_accounts(self, accounts):
+        self._accounts_combobox.addItems(accounts)
+
+    def update_folders_tree(self, folders):
+        self._load_children(folders, self._folders_widget)
+    
+        self._folders_widget.expandToDepth(-1)
+
+    def _load_children(self, folders, parent_node):
+        for folder, children in folders.items():
+            folder_node = QTreeWidgetItem(parent_node, [folder])
+        
+            self._load_children(children, folder_node)
+
+    def clear_mails_widget(self):
+        self._mails_widget.clear()
+
+    def add_mail(self, mail: Mail):
+        message = MessageWidget(mail)
+        self._mails_widget.addItem(message)
+
+    def set_mail(self, from_, to, subject, body):
+        self._from_label.setText(from_)
+        self._to_label.setText(to)
+        self._subject_label.setText(subject)
+        self._mail_area.setHtml(body)
+
+    def select_first_folder(self):
+        first_folder = self._folders_widget.topLevelItem(0)
+    
+        self._folders_widget.setCurrentItem(first_folder)
+
+    def select_first_mail(self):
+        self._mails_widget.setCurrentRow(0)
+    
     @staticmethod
     def _open_send_dialog():
         send_controller = SendController()
