@@ -26,7 +26,6 @@ class MainWindow(QMainWindow):
         
         self._splitter = QSplitter()
         self._splitter.setChildrenCollapsible(False)
-        self._splitter.splitterMoved.connect(self._splitter_moved)
         self.setCentralWidget(self._splitter)
 
         self._folders_widget = QTreeWidget()
@@ -47,7 +46,6 @@ class MainWindow(QMainWindow):
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
         self.showMaximized()
-        self._update_search_size()
 
     def _init_mail_widget(self):
         mail_widget = QWidget()
@@ -91,9 +89,6 @@ class MainWindow(QMainWindow):
         
         self._toolbar.addAction("Написать", self._open_send_dialog)
         
-        self._search_edit = QLineEdit()
-        self._toolbar.addWidget(self._search_edit)
-
         # self._toolbar.addWidget(QPushButton("Раз кнопка"))
         # self._toolbar.addWidget(QPushButton("Два кнопка"))
         
@@ -111,6 +106,8 @@ class MainWindow(QMainWindow):
         self._accounts_combobox.addItems(accounts)
 
     def update_folders_tree(self, folders):
+        self._folders_widget.clear()
+        
         self._load_children(folders, self._folders_widget)
     
         self._folders_widget.expandToDepth(-1)
@@ -148,16 +145,6 @@ class MainWindow(QMainWindow):
         send_dialog = SendDialog(send_controller)
         send_dialog.exec()
     
-    def _splitter_moved(self, pos, index):
-        self._update_search_size()
-    
-    def _update_search_size(self):
-        self._search_edit.setFixedWidth(
-            self._splitter.handle(2).pos().x() - self._search_edit.pos().x())
-    
-    def resizeEvent(self, event):
-        self._update_search_size()
-
 
 class MessageWidget(QListWidgetItem):
     def __init__(self, email):
