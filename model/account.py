@@ -1,7 +1,7 @@
 import keyring
 from peewee import *
 
-from database.entity.base_entity import BaseEntity
+from model.base_entity import BaseEntity
 
 
 class Account(BaseEntity):

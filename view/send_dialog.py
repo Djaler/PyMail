@@ -29,8 +29,8 @@ class SendDialog(QDialog, BaseView):
         
         self.setLayout(main_layout)
         self.setMinimumWidth(300)
-        self.setWindowTitle('Создание учётной записи')
-        self.show()
+        self.setWindowTitle('Создание письма')
+        self.setModal(True)
         self.center()
     
     def center(self):

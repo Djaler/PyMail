@@ -1,7 +1,7 @@
 from peewee import *
 
-from database.entity.base_entity import BaseEntity
-from database.entity.mail import Mail
+from model.base_entity import BaseEntity
+from model.mail import Mail
 
 
 class Attachment(BaseEntity):

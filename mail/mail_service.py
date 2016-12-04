@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import easyimap
 from imapy import utils
 
-from database.entity import Folder, Mail, Account
+from model import Folder, Mail, Account
 
 _charset_pattern = re.compile('charset\s*=\s*"?([\w-]+)"?')
 

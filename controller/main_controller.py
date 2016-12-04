@@ -2,8 +2,8 @@ import re
 from collections import OrderedDict
 
 from controller import BaseController
-from database.entity import Account, Folder, Mail
 from mail.mailer import sync
+from model import Account, Folder, Mail
 
 
 class MainController(BaseController):

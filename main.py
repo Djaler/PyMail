@@ -3,7 +3,7 @@ from sys import argv, exit
 from PyQt5.QtWidgets import *
 
 from controller import MainController
-from database.entity import init_database, Account
+from model import init_database, Account
 from view import MainWindow, RegisterDialog
 
 if __name__ == '__main__':

@@ -5,9 +5,8 @@ from PyQt5.QtWidgets import *
 from auto_resizing_text_edit import AutoResizingTextEdit
 
 from controller.send_controller import SendController
-from database.entity import Mail
-from view import BaseView
-from view import SendDialog
+from model import Mail
+from view import BaseView, SendDialog
 
 
 # noinspection PyUnusedLocal
@@ -141,7 +140,7 @@ class MainWindow(QMainWindow, BaseView):
     def _open_send_dialog():
         send_controller = SendController()
         send_dialog = SendDialog(send_controller)
-        send_dialog.exec()
+        send_dialog.show()
 
 
 class MessageWidget(QListWidgetItem):

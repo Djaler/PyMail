@@ -1,7 +1,7 @@
 import imapy
 from imapy.imap import *
 
-from database.entity import Account, Folder
+from model import Account, Folder
 
 
 @is_logged
