@@ -31,10 +31,26 @@ class SendDialog(QDialog, BaseView):
         self.setMinimumWidth(300)
         self.setWindowTitle('Создание письма')
         self.setModal(True)
-        self.center()
-    
-    def center(self):
+        self.show()
+        self._center()
+
+    def _center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    @property
+    def to(self):
+        return self._address_edit.text()
+
+    @property
+    def subject(self):
+        return self._subject_edit.text()
+
+    @property
+    def body(self):
+        return self._body_edit.toPlainText()
+
+    def show_error(self, text):
+        QMessageBox().warning(self, 'Ошибка', text)

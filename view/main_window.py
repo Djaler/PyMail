@@ -4,9 +4,8 @@ from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtWidgets import *
 from auto_resizing_text_edit import AutoResizingTextEdit
 
-from controller.send_controller import SendController
 from model import Mail
-from view import BaseView, SendDialog
+from view import BaseView
 
 
 # noinspection PyUnusedLocal
@@ -83,8 +82,8 @@ class MainWindow(QMainWindow, BaseView):
         self._toolbar.addWidget(self._accounts_combobox)
 
         self._toolbar.addAction("Синхронизировать", self._controller.sync)
-        
-        self._toolbar.addAction("Написать", self._open_send_dialog)
+
+        self._toolbar.addAction("Написать", self._controller.send_mail)
         
         # self._toolbar.addWidget(QPushButton("Раз кнопка"))
         # self._toolbar.addWidget(QPushButton("Два кнопка"))
@@ -135,12 +134,6 @@ class MainWindow(QMainWindow, BaseView):
 
     def select_first_mail(self):
         self._mails_widget.setCurrentRow(0)
-    
-    @staticmethod
-    def _open_send_dialog():
-        send_controller = SendController()
-        send_dialog = SendDialog(send_controller)
-        send_dialog.show()
 
 
 class MessageWidget(QListWidgetItem):

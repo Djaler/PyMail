@@ -76,10 +76,10 @@ class RegisterDialog(QDialog):
         self.setMinimumWidth(300)
         self.setWindowTitle('Создание учётной записи')
         self.show()
-        self.center()
+        self._center()
         self.setFocus()
-    
-    def center(self):
+
+    def _center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)

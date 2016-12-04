@@ -1,9 +1,10 @@
 import re
 from collections import OrderedDict
 
-from controller import BaseController
+from controller import BaseController, SendController
 from mail.mailer import sync
 from model import Account, Folder, Mail
+from view import SendDialog
 
 
 class MainController(BaseController):
@@ -84,3 +85,8 @@ class MainController(BaseController):
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
         self._view.set_mail(from_, to, subject, body)
+
+    def send_mail(self):
+        send_controller = SendController(self._current_account)
+        send_dialog = SendDialog(send_controller)
+        send_dialog.show()
