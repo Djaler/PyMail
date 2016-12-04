@@ -6,19 +6,17 @@ from auto_resizing_text_edit import AutoResizingTextEdit
 
 from controller.send_controller import SendController
 from database.entity import Mail
-from view.send_dialog import SendDialog
+from view import BaseView
+from view import SendDialog
 
 
 # noinspection PyUnusedLocal
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, BaseView):
     def __init__(self, controller):
-        super().__init__()
-
-        self._controller = controller
-        self._controller.set_view(self)
+        super().__init__(controller=controller)
         
         self._init_ui()
-
+    
         self._controller.set_accounts()
     
     def _init_ui(self):
@@ -109,13 +107,13 @@ class MainWindow(QMainWindow):
         self._folders_widget.clear()
         
         self._load_children(folders, self._folders_widget)
-    
+
         self._folders_widget.expandToDepth(-1)
 
     def _load_children(self, folders, parent_node):
         for folder, children in folders.items():
             folder_node = QTreeWidgetItem(parent_node, [folder])
-        
+
             self._load_children(children, folder_node)
 
     def clear_mails_widget(self):
@@ -133,7 +131,7 @@ class MainWindow(QMainWindow):
 
     def select_first_folder(self):
         first_folder = self._folders_widget.topLevelItem(0)
-    
+
         self._folders_widget.setCurrentItem(first_folder)
 
     def select_first_mail(self):
@@ -144,7 +142,7 @@ class MainWindow(QMainWindow):
         send_controller = SendController()
         send_dialog = SendDialog(send_controller)
         send_dialog.exec()
-    
+
 
 class MessageWidget(QListWidgetItem):
     def __init__(self, email):

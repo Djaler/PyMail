@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 
-from controller.base_controller import BaseController
+from controller import BaseController
 from database.entity import Account, Folder, Mail
 from mail.mailer import sync
 

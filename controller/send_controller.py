@@ -1,4 +1,4 @@
-from controller.base_controller import BaseController
+from controller import BaseController
 
 
 class SendController(BaseController):

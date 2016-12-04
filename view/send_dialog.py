@@ -1,12 +1,11 @@
 from PyQt5.QtWidgets import *
 
+from view import BaseView
 
-class SendDialog(QDialog):
+
+class SendDialog(QDialog, BaseView):
     def __init__(self, controller):
-        super().__init__()
-        
-        self._controller = controller
-        self._controller.set_view(self)
+        super().__init__(controller=controller)
         
         self._init_ui()
     
