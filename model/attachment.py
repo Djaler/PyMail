@@ -5,7 +5,7 @@ from model.mail import Mail
 
 
 class Attachment(BaseEntity):
-    name = TextField(unique=True)
+    name = TextField()
     mail = ForeignKeyField(Mail, related_name="attachments")
     path = TextField()
 

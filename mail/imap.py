@@ -1,5 +1,6 @@
 import base64
 import locale
+import os
 import quopri
 import sys
 from datetime import datetime, timedelta
@@ -8,7 +9,8 @@ import easyimap
 import imapy
 from imapy.imap import *
 
-from model import Folder, Mail, Account
+from model import Folder, Mail, Account, Attachment
+from utils import get_app_folder
 
 
 @is_logged
@@ -126,16 +128,32 @@ class MailService:
                                              include_raw=True)
                 
                 try:
-                    encoding = self.c.search(mail.content_type).group(1)
+                    encoding = self._charset_pattern.search(
+                        mail.content_type).group(1)
                 except (IndexError, AttributeError):
                     encoding = "utf-8"
                 raw_mail = email.message_from_string(mail.raw.decode(encoding))
                 body, is_html = self._get_body(raw_mail)
-                
-                Mail.create(uid=id_, folder=folder, body=body,
-                            subject=mail.title, recipient=mail.to,
-                            sender=mail.from_addr, datetime=mail.date,
-                            is_html=is_html)
+
+                mail_instance = Mail.create(uid=id_, folder=folder, body=body,
+                                            subject=mail.title,
+                                            recipient=mail.to,
+                                            sender=mail.from_addr,
+                                            datetime=mail.date,
+                                            is_html=is_html)
+
+                for attachment in mail.attachments:
+                    name, content, _ = attachment
+
+                    path = os.path.join(get_app_folder(),
+                                        str(self._account.id), str(folder.id),
+                                        name)
+                    
+                    Attachment.create(name=name, mail=mail_instance, path=path)
+
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                    with open(path, "wb") as file:
+                        file.write(content)
     
     def _get_body(self, message):
         is_html = True
