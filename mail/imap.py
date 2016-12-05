@@ -134,10 +134,10 @@ class MailService:
                     encoding = "utf-8"
                 raw_mail = email.message_from_string(mail.raw.decode(encoding))
                 body, is_html = self._get_body(raw_mail)
-
+                subject = mail.title if mail.title else ''
+                
                 mail_instance = Mail.create(uid=id_, folder=folder, body=body,
-                                            subject=mail.title,
-                                            recipient=mail.to,
+                                            subject=subject, recipient=mail.to,
                                             sender=mail.from_addr,
                                             datetime=mail.date,
                                             is_html=is_html)
@@ -145,12 +145,13 @@ class MailService:
                 for attachment in mail.attachments:
                     name, content, _ = attachment
 
-                    path = os.path.join(get_app_folder(),
-                                        str(self._account.id), str(folder.id),
-                                        name)
-                    
-                    Attachment.create(name=name, mail=mail_instance, path=path)
+                    path = os.path.join(get_app_folder(), "attachments",
+                                        str(self._account.id),
+                                        str(mail_instance.id), name)
 
+                    Attachment.create(name=name, mail=mail_instance, path=path,
+                                      size=len(content))
+                    
                     os.makedirs(os.path.dirname(path), exist_ok=True)
                     with open(path, "wb") as file:
                         file.write(content)

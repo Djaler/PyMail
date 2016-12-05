@@ -1,13 +1,16 @@
 import re
+import shutil
 from collections import OrderedDict
+
+from PyQt5.QtCore import QObject
 
 from controller import BaseController, SendController
 from mail.mailer import sync
-from model import Account, Folder, Mail
+from model import Account, Folder, Mail, Attachment
 from view import SendDialog
 
 
-class MainController(BaseController):
+class MainController(QObject, BaseController):
     def __init__(self):
         super().__init__()
 
@@ -15,6 +18,8 @@ class MainController(BaseController):
 
         self._current_account = None
 
+        self._current_mail = None
+    
     def account_changed(self, current_index):
         self._current_account = self._accounts[current_index]
 
@@ -62,21 +67,21 @@ class MainController(BaseController):
             Mail.uid.desc())
         
         for email in emails:
-            self._view.add_mail(email)
-
+            self._view.add_mail(email.id, email.sender, email.subject)
+        
         self._view.select_first_mail()
     
     def mail_changed(self):
         current_id = self._view.current_mail_id
-        
-        current_mail = Mail.get(Mail.id == current_id)
 
-        from_ = current_mail.sender
-        to = current_mail.recipient
-        subject = current_mail.subject
-        
-        body = current_mail.body
-        if not current_mail.is_html:
+        self._current_mail = Mail.get(Mail.id == current_id)
+
+        from_ = self._current_mail.sender
+        to = self._current_mail.recipient
+        subject = self._current_mail.subject
+
+        body = self._current_mail.body
+        if not self._current_mail.is_html:
             body = "<br/>\n".join(body.splitlines())
             
             url_pattern = re.compile(
@@ -84,8 +89,24 @@ class MainController(BaseController):
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
-        self._view.set_mail(from_, to, subject, body)
+        attachments = {attach.name: attach.size for attach in
+                       self._current_mail.attachments}
 
+        self._view.set_mail(from_, to, subject, body, attachments)
+
+    def save_attach(self):
+        name = self.sender().text()
+    
+        path_to_save = self._view.open_save_dialog(name)
+    
+        if not path_to_save:
+            return
+    
+        original_path = list(self._current_mail.attachments.select().where(
+            Attachment.name == name))[0].path
+    
+        shutil.copy(original_path, path_to_save)
+    
     def send_mail(self):
         send_controller = SendController(self._current_account)
         send_dialog = SendDialog(send_controller)

@@ -1,20 +1,21 @@
+import os.path
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWebKitWidgets import *
 from PyQt5.QtWidgets import *
 from auto_resizing_text_edit import AutoResizingTextEdit
+from humanize import naturalsize
 
-from model import Mail
 from view import BaseView
 
 
-# noinspection PyUnusedLocal
 class MainWindow(QMainWindow, BaseView):
     def __init__(self, controller):
         super().__init__(controller=controller)
         
         self._init_ui()
-    
+
         self._controller.set_accounts()
     
     def _init_ui(self):
@@ -33,6 +34,7 @@ class MainWindow(QMainWindow, BaseView):
 
         self._mails_widget = QListWidget()
         self._mails_widget.setMinimumWidth(200)
+        self._mails_widget.setWordWrap(True)
         self._mails_widget.itemSelectionChanged.connect(
             self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
@@ -45,6 +47,7 @@ class MainWindow(QMainWindow, BaseView):
 
     def _init_mail_widget(self):
         mail_widget = QWidget()
+        self._splitter.addWidget(mail_widget)
         mail_layout = QVBoxLayout()
         mail_widget.setLayout(mail_layout)
 
@@ -68,9 +71,10 @@ class MainWindow(QMainWindow, BaseView):
             QWebPage.DelegateAllLinks)
         self._mail_area.linkClicked.connect(
             lambda url: QDesktopServices().openUrl(url))
-        
         mail_layout.addWidget(self._mail_area)
-        self._splitter.addWidget(mail_widget)
+
+        self._attachment_layout = QGridLayout()
+        mail_layout.addLayout(self._attachment_layout)
     
     def _init_toolbar(self):
         self._toolbar = QToolBar()
@@ -84,9 +88,6 @@ class MainWindow(QMainWindow, BaseView):
         self._toolbar.addAction("Синхронизировать", self._controller.sync)
 
         self._toolbar.addAction("Написать", self._controller.send_mail)
-        
-        # self._toolbar.addWidget(QPushButton("Раз кнопка"))
-        # self._toolbar.addWidget(QPushButton("Два кнопка"))
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 
@@ -117,16 +118,26 @@ class MainWindow(QMainWindow, BaseView):
     def clear_mails_widget(self):
         self._mails_widget.clear()
 
-    def add_mail(self, mail: Mail):
-        message = MessageWidget(mail)
+    def add_mail(self, id, sender, subject):
+        message = MessageWidget(id, sender, subject)
         self._mails_widget.addItem(message)
 
-    def set_mail(self, from_, to, subject, body):
+    def set_mail(self, from_, to, subject, body, attachments):
         self._from_label.setText(from_)
         self._to_label.setText(to)
         self._subject_label.setText(subject)
         self._mail_area.setHtml(body)
 
+        _clear_layout(self._attachment_layout)
+
+        for index, (name, size) in enumerate(attachments.items()):
+            attach_button = QPushButton(name)
+            attach_button.pressed.connect(self._controller.save_attach)
+    
+            self._attachment_layout.addWidget(attach_button, index, 0)
+            self._attachment_layout.addWidget(
+                QLabel(naturalsize(size, gnu=True)), index, 1, 1, 2)
+    
     def select_first_folder(self):
         first_folder = self._folders_widget.topLevelItem(0)
 
@@ -135,10 +146,26 @@ class MainWindow(QMainWindow, BaseView):
     def select_first_mail(self):
         self._mails_widget.setCurrentRow(0)
 
+    def open_save_dialog(self, name):
+        home = os.path.expanduser("~")
+        default_path = os.path.join(home, name)
+        path, _ = QFileDialog().getSaveFileName(self, "Сохранение файла",
+                                                default_path)
+        return path
+
 
 class MessageWidget(QListWidgetItem):
-    def __init__(self, email):
+    def __init__(self, id, sender, subject):
         super().__init__()
 
-        self.setText("\n".join([email.sender, email.subject]))
-        self.setData(Qt.UserRole, email.id)
+        self.setText("\n".join([sender, subject]))
+        self.setData(Qt.UserRole, id)
+
+
+def _clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():
+            child.widget().deleteLater()
+        elif child.layout():
+            _clear_layout(child.layout())
