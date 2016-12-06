@@ -106,55 +106,68 @@ class MailService:
     
     def load_emails(self, folder: Folder):
         self._connection.change_mailbox(self._to_utf_7(folder.name))
-        
-        past = datetime.now() - timedelta(weeks=2)
-        
-        locale.setlocale(locale.LC_TIME, ("en_US", "UTF-8"))
-        date_criterion = '(SINCE "{}")'.format(past.strftime("%d-%b-%Y"))
-        locale.resetlocale(locale.LC_TIME)
-        
-        ids_on_server = list(
-            map(int, self._connection.listids(sys.maxsize, date_criterion)))
-        
-        Mail.delete().where((Mail.folder == folder) & (
-            Mail.uid.not_in(ids_on_server))).execute()
+
+        date = datetime.now() - timedelta(weeks=2)
+
+        date_criterion = self._create_date_criterion(date)
+
+        ids_on_server = [int(id) for id in
+                         self._connection.listids(sys.maxsize, date_criterion)]
+
+        self._delete_mail_not_on_server(ids_on_server, folder, date)
         
         local_ids = [mail.uid for mail in
                      Mail.select().where(Mail.folder == folder)]
         
         for id_ in ids_on_server:
-            if id_ not in local_ids:
-                mail = self._connection.mail(str(id_).encode(),
-                                             include_raw=True)
-                
-                try:
-                    encoding = self._charset_pattern.search(
-                        mail.content_type).group(1)
-                except (IndexError, AttributeError):
-                    encoding = "utf-8"
-                raw_mail = email.message_from_string(mail.raw.decode(encoding))
-                body, is_html = self._get_body(raw_mail)
-                subject = mail.title if mail.title else ''
-                
-                mail_instance = Mail.create(uid=id_, folder=folder, body=body,
-                                            subject=subject, recipient=mail.to,
-                                            sender=mail.from_addr,
-                                            datetime=mail.date,
-                                            is_html=is_html)
+            if id_ in local_ids:
+                continue
+            mail = self._connection.mail(str(id_).encode(), include_raw=True)
+    
+            try:
+                encoding = self._charset_pattern.search(
+                    mail.content_type).group(1)
+            except (IndexError, AttributeError):
+                encoding = "utf-8"
+            raw_mail = email.message_from_string(mail.raw.decode(encoding))
+            body, is_html = self._get_body(raw_mail)
+            subject = mail.title if mail.title else ''
+    
+            mail_instance = Mail.create(uid=id_, folder=folder, body=body,
+                                        subject=subject, recipient=mail.to,
+                                        sender=mail.from_addr,
+                                        datetime=mail.date, is_html=is_html)
+    
+            self._load_attachments(mail_instance, mail)
 
-                for attachment in mail.attachments:
-                    name, content, _ = attachment
+    @staticmethod
+    def _delete_mail_not_on_server(ids_on_server, folder, date):
+        Mail.delete().where((Mail.folder == folder) & (
+            Mail.uid.not_in(ids_on_server)) & Mail.datetime >= date).execute()
 
-                    path = os.path.join(get_app_folder(), "attachments",
-                                        str(self._account.id),
-                                        str(mail_instance.id), name)
+    @staticmethod
+    def _create_date_criterion(date):
+        locale.setlocale(locale.LC_TIME, ("en_US", "UTF-8"))
+        date_criterion = '(SINCE "{}")'.format(date.strftime("%d-%b-%Y"))
+        locale.resetlocale(locale.LC_TIME)
+    
+        return date_criterion
 
-                    Attachment.create(name=name, mail=mail_instance, path=path,
-                                      size=len(content))
-                    
-                    os.makedirs(os.path.dirname(path), exist_ok=True)
-                    with open(path, "wb") as file:
-                        file.write(content)
+    @staticmethod
+    def _load_attachments(mail_instance, mail):
+        for attachment in mail.attachments:
+            name, content, _ = attachment
+        
+            path = os.path.join(get_app_folder(), "attachments",
+                                str(mail_instance.folder.account.id),
+                                str(mail_instance.id), name)
+        
+            Attachment.create(name=name, mail=mail_instance, path=path,
+                              size=len(content))
+        
+            os.makedirs(os.path.dirname(path), exist_ok=True)
+            with open(path, "wb") as file:
+                file.write(content)
     
     def _get_body(self, message):
         is_html = True
