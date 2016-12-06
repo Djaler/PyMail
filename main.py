@@ -1,7 +1,7 @@
 import os.path
 from sys import argv, exit
 
-from PyQt5.QtWidgets import *
+from qtpy.QtWidgets import QApplication
 
 from controller import MainController
 from model import init_database, Account

@@ -2,7 +2,7 @@ import re
 import shutil
 from collections import OrderedDict
 
-from PyQt5.QtCore import QObject
+from qtpy.QtCore import QObject
 
 from controller import BaseController, SendController
 from mail import imap

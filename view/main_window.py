@@ -1,11 +1,10 @@
 import os.path
 
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWebKitWidgets import *
-from PyQt5.QtWidgets import *
 from auto_resizing_text_edit import AutoResizingTextEdit
 from humanize import naturalsize
+from qtpy.QtCore import *
+from qtpy.QtWebEngineWidgets import *
+from qtpy.QtWidgets import *
 
 from view import BaseView
 
@@ -66,9 +65,9 @@ class MainWindow(QMainWindow, BaseView):
         header_layout.addRow("Тема:", self._subject_label)
         mail_layout.addLayout(header_layout)
 
-        self._mail_area = QWebView()
+        self._mail_area = QWebEngineView()
         self._mail_area.page().setLinkDelegationPolicy(
-            QWebPage.DelegateAllLinks)
+            QWebEnginePage.DelegateAllLinks)
         self._mail_area.linkClicked.connect(
             lambda url: QDesktopServices().openUrl(url))
         mail_layout.addWidget(self._mail_area)
@@ -137,7 +136,7 @@ class MainWindow(QMainWindow, BaseView):
         for index, (name, size) in enumerate(attachments.items()):
             attach_button = QPushButton(name)
             attach_button.pressed.connect(self._controller.save_attach)
-    
+
             self._attachment_layout.addWidget(attach_button, index, 0)
             self._attachment_layout.addWidget(
                 QLabel(naturalsize(size, gnu=True)), index, 1, 1, 2)

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import *
+from qtpy.QtWidgets import *
 
 from view import BaseView
 

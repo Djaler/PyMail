@@ -1,3 +1,4 @@
+qtpy
 humanize
 appdirs
 easyimap

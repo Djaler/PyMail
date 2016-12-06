@@ -1,7 +1,6 @@
 from getpass import getuser
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from qtpy.QtWidgets import *
 
 
 # TODO Проверка подключения при добавлении
