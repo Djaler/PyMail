@@ -5,33 +5,21 @@ from outbox import Outbox, Email
 from model import Account
 
 
-class SendService:
-    def __init__(self, account: Account):
-        self._account = account
+def send(account: Account, to: str, subject: str, body: str):
+    if not body:
+        raise EmptyBody
     
-    def __enter__(self):
-        self._connection = Outbox(server=self._account.smtp_host,
-                                  port=self._account.smtp_port,
-                                  username=self._account.address,
-                                  password=self._account.password,
-                                  mode='SSL' if self._account.smtp_ssl else
-                                  None)
-        self._connection.connect()
-        return self
+    connection = Outbox(server=account.smtp_host, port=account.smtp_port,
+                        username=account.address, password=account.password,
+                        mode='SSL' if account.smtp_ssl else None)
+    connection.connect()
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._connection.disconnect()
+    email = Email(recipients=to, subject=subject, body=body)
     
-    def send(self, to, subject, body):
-        if not body:
-            raise EmptyBody
-        
-        email = Email(recipients=to, subject=subject, body=body)
-        
-        try:
-            self._connection.send(email)
-        except SMTPRecipientsRefused:
-            raise IncorrectAddress
+    try:
+        connection.send(email)
+    except SMTPRecipientsRefused:
+        raise IncorrectAddress
 
 
 class IncorrectAddress(Exception):

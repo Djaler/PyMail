@@ -1,6 +1,5 @@
 from controller import BaseController
-from mail.mailer import send
-from mail.smtp import EmptyBody, IncorrectAddress
+from mail import smtp
 
 
 class SendController(BaseController):
@@ -10,11 +9,11 @@ class SendController(BaseController):
     
     def send(self):
         try:
-            send(self._current_account, self._view.to, self._view.subject,
-                 self._view.body)
-        except IncorrectAddress:
+            smtp.send(self._current_account, self._view.to, self._view.subject,
+                      self._view.body)
+        except smtp.IncorrectAddress:
             self._view.show_error("Введён некорректный адрес")
-        except EmptyBody:
+        except smtp.EmptyBody:
             self._view.show_error("Тело письма не должно быть пустым")
         else:
             self._view.accept()

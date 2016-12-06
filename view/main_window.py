@@ -116,7 +116,11 @@ class MainWindow(QMainWindow, BaseView):
             self._load_children(children, folder_node)
 
     def clear_mails_widget(self):
+        self._mails_widget.itemSelectionChanged.disconnect(
+            self._controller.mail_changed)
         self._mails_widget.clear()
+        self._mails_widget.itemSelectionChanged.connect(
+            self._controller.mail_changed)
 
     def add_mail(self, id, sender, subject):
         message = MessageWidget(id, sender, subject)

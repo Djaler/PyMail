@@ -5,7 +5,7 @@ from collections import OrderedDict
 from PyQt5.QtCore import QObject
 
 from controller import BaseController, SendController
-from mail.mailer import sync
+from mail import imap
 from model import Account, Folder, Mail, Attachment
 from view import SendDialog
 
@@ -48,8 +48,8 @@ class MainController(QObject, BaseController):
         self._view.set_accounts(account.address for account in self._accounts)
 
     def sync(self):
-        sync(self._current_account)
-
+        imap.load(self._current_account)
+        
         self._update()
     
     def folder_changed(self):
@@ -96,15 +96,15 @@ class MainController(QObject, BaseController):
 
     def save_attach(self):
         name = self.sender().text()
-    
+
         path_to_save = self._view.open_save_dialog(name)
-    
+
         if not path_to_save:
             return
-    
+
         original_path = list(self._current_mail.attachments.select().where(
             Attachment.name == name))[0].path
-    
+
         shutil.copy(original_path, path_to_save)
     
     def send_mail(self):
