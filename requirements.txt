@@ -8,3 +8,5 @@ outbox
 keyring
 keyrings.alt
 auto-resizing-text-edit
+pyDes
+rsa
