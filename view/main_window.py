@@ -149,6 +149,8 @@ class MainWindow(QMainWindow, BaseView):
     def select_first_mail(self):
         self._mails_widget.setCurrentRow(0)
 
+        self._mails_widget.setFocus()
+    
     def open_save_dialog(self, name):
         home = os.path.expanduser("~")
         default_path = os.path.join(home, name)
