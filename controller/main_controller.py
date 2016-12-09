@@ -5,8 +5,9 @@ from collections import OrderedDict
 from qtpy.QtCore import QObject
 
 from controller import BaseController, SendController
+from crypto import chipher
 from mail import imap
-from model import Account, Folder, Mail, Attachment
+from model import *
 from view import SendDialog
 
 
@@ -111,3 +112,14 @@ class MainController(QObject, BaseController):
         send_controller = SendController(self._current_account)
         send_dialog = SendDialog(send_controller)
         send_dialog.show()
+
+    def decrypt(self):
+        current_address = self._current_mail.sender
+    
+        private_key = self._current_account.key_pairs.where(
+            KeyPair.address == current_address)
+    
+        if private_key.exist():
+            body = chipher.decrypt(self._current_mail.body,
+                                   private_key.get().private_key)
+            self._view.set_mail_body(body)

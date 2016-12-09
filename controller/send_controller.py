@@ -13,15 +13,13 @@ class SendController(BaseController):
         body = self._view.body
 
         address = self._view.to
-        
-        try:
-            public_key = self._current_account.foreign_keys.where(
-                ForeignKey.address == address).get().key
-            
-            body = chipher.encrypt(body, public_key)
-        except ForeignKey.ForeignKeyDoesNotExist:
-            pass
 
+        public_key = self._current_account.foreign_keys.where(
+            ForeignKey.address == address)
+
+        if public_key.exist():
+            body = chipher.encrypt(body, public_key.get().key)
+        
         try:
             smtp.send(self._current_account, address, self._view.subject, body)
         except smtp.IncorrectAddress:
