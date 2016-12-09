@@ -18,15 +18,14 @@ class ForeignKey(BaseEntity):
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
             keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address +
-                                 " foreign public",
+                                 self.account.login + " " + self.address + " foreign public",
                                  self._key)
     
     @property
     def key(self):
         return keyring.get_password("PyMail",
-                                    self.account.address + " " +
-                                    self.address + " foreign public")
+                                    self.account.login + " " + self.address
+                                    + " foreign public")
     
     class Meta:
         db_table = 'foreign_keys'

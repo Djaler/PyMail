@@ -1,5 +1,6 @@
 from getpass import getuser
 
+from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 

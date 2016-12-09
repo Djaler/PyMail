@@ -21,25 +21,23 @@ class KeyPair(BaseEntity):
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
             keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address +
+                                 self.account.login + " " + self.address +
                                  " public",
                                  self._public)
     
             keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address +
+                                 self.account.login + " " + self.address +
                                  " private",
                                  self._private)
     
     @property
     def public_key(self):
-        return keyring.get_password("PyMail",
-                                    self.account.address + " " +
+        return keyring.get_password("PyMail", self.account.login + " " +
                                     self.address + " public")
     
     @property
     def private_key(self):
-        return keyring.get_password("PyMail",
-                                    self.account.address + " " +
+        return keyring.get_password("PyMail", self.account.login + " " +
                                     self.address + " private")
     
     class Meta:

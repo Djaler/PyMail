@@ -10,7 +10,7 @@ def send(account: Account, to: str, subject: str, body: str):
         raise EmptyBody
     
     connection = Outbox(server=account.smtp_host, port=account.smtp_port,
-                        username=account.address, password=account.password,
+                        username=account.login, password=account.password,
                         mode='SSL' if account.smtp_ssl else None)
     connection.connect()
     

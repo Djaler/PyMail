@@ -17,7 +17,7 @@ class SendController(BaseController):
         public_key = self._current_account.foreign_keys.where(
             ForeignKey.address == address)
 
-        if public_key.exist():
+        if public_key.exists():
             body = chipher.encrypt(body, public_key.get().key)
         
         try:

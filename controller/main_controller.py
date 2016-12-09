@@ -46,7 +46,7 @@ class MainController(QObject, BaseController):
         self._view.select_first_folder()
 
     def set_accounts(self):
-        self._view.set_accounts(account.address for account in self._accounts)
+        self._view.set_accounts(account.login for account in self._accounts)
 
     def sync(self):
         imap.load(self._current_account)
@@ -118,8 +118,8 @@ class MainController(QObject, BaseController):
     
         private_key = self._current_account.key_pairs.where(
             KeyPair.address == current_address)
-    
-        if private_key.exist():
+
+        if private_key.exists():
             body = chipher.decrypt(self._current_mail.body,
                                    private_key.get().private_key)
             self._view.set_mail_body(body)
