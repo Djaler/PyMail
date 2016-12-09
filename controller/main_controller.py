@@ -1,14 +1,17 @@
+import os.path
 import re
 import shutil
 from collections import OrderedDict
 
 from qtpy.QtCore import QObject
+from qtpy.QtWidgets import QFileDialog
 
-from controller import BaseController, SendController
+from controller import BaseController, SendController, CreateKeysController
 from crypto import chipher
+from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
-from view import SendDialog
+from view import SendDialog, CreateKeysDialog
 
 
 class MainController(QObject, BaseController):
@@ -46,8 +49,8 @@ class MainController(QObject, BaseController):
         self._view.select_first_folder()
 
     def set_accounts(self):
-        self._view.set_accounts(account.login for account in self._accounts)
-
+        self._view.set_accounts(account.name for account in self._accounts)
+    
     def sync(self):
         imap.load(self._current_account)
         
@@ -94,7 +97,10 @@ class MainController(QObject, BaseController):
             KeyPair.address == from_)
 
         if private_key.exists():
-            body = chipher.decrypt(body, private_key.get().private_key)
+            try:
+                body = chipher.decrypt(body, private_key.get().private_key)
+            except DecryptionError:
+                pass
         
         attachments = {attach.name: attach.size for attach in
                        self._current_mail.attachments}
@@ -104,8 +110,12 @@ class MainController(QObject, BaseController):
     def save_attach(self):
         name = self.sender().text()
 
-        path_to_save = self._view.open_save_dialog(name)
-
+        home = os.path.expanduser("~")
+        default_path = os.path.join(home, name)
+        path_to_save, _ = QFileDialog().getSaveFileName(self._view,
+                                                        "Сохранение файла",
+                                                        default_path)
+        
         if not path_to_save:
             return
 
@@ -115,6 +125,11 @@ class MainController(QObject, BaseController):
         shutil.copy(original_path, path_to_save)
     
     def send_mail(self):
-        send_controller = SendController(self._current_account)
-        send_dialog = SendDialog(send_controller)
-        send_dialog.show()
+        controller = SendController(self._current_account)
+        dialog = SendDialog(controller)
+        dialog.show()
+
+    def create_key_pair(self):
+        controller = CreateKeysController(self._current_account)
+        dialog = CreateKeysDialog(controller)
+        dialog.show()

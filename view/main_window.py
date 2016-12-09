@@ -1,5 +1,3 @@
-import os.path
-
 from auto_resizing_text_edit import AutoResizingTextEdit
 from humanize import naturalsize
 from qtpy.QtCore import *
@@ -87,6 +85,9 @@ class MainWindow(QMainWindow, BaseView):
         self._toolbar.addAction("Синхронизировать", self._controller.sync)
 
         self._toolbar.addAction("Написать", self._controller.send_mail)
+
+        self._toolbar.addAction("Создать пару ключей",
+                                self._controller.create_key_pair)
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 
@@ -150,13 +151,6 @@ class MainWindow(QMainWindow, BaseView):
         self._mails_widget.setCurrentRow(0)
 
         self._mails_widget.setFocus()
-    
-    def open_save_dialog(self, name):
-        home = os.path.expanduser("~")
-        default_path = os.path.join(home, name)
-        path, _ = QFileDialog().getSaveFileName(self, "Сохранение файла",
-                                                default_path)
-        return path
 
 
 class MessageWidget(QListWidgetItem):

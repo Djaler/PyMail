@@ -22,10 +22,10 @@ class SendDialog(QDialog, BaseView):
         
         self._body_edit = QTextEdit()
         main_layout.addWidget(self._body_edit)
-        
-        self._send_btn = QPushButton("Отправить")
-        self._send_btn.pressed.connect(self._controller.send)
-        main_layout.addWidget(self._send_btn)
+
+        send_btn = QPushButton("Отправить")
+        send_btn.pressed.connect(self._controller.send)
+        main_layout.addWidget(send_btn)
         
         self.setLayout(main_layout)
         self.setMinimumWidth(300)
