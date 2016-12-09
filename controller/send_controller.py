@@ -1,7 +1,7 @@
 from controller import BaseController
 from crypto import chipher
 from mail import smtp
-from model import PublicKey
+from model import ForeignKey
 
 
 class SendController(BaseController):
@@ -11,17 +11,17 @@ class SendController(BaseController):
     
     def send(self):
         body = self._view.body
-    
+
         address = self._view.to
         
         try:
-            public_key = self._current_account.public_keys.where(
-                PublicKey.address == address).get().key
-    
+            public_key = self._current_account.foreign_keys.where(
+                ForeignKey.address == address).get().key
+            
             body = chipher.encrypt(body, public_key)
-        except PublicKey.PublicKeyDoesNotExist:
+        except ForeignKey.ForeignKeyDoesNotExist:
             pass
-    
+
         try:
             smtp.send(self._current_account, address, self._view.subject, body)
         except smtp.IncorrectAddress:
