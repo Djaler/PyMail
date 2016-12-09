@@ -90,6 +90,12 @@ class MainController(QObject, BaseController):
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
+        private_key = self._current_account.key_pairs.where(
+            KeyPair.address == from_)
+
+        if private_key.exists():
+            body = chipher.decrypt(body, private_key.get().private_key)
+        
         attachments = {attach.name: attach.size for attach in
                        self._current_mail.attachments}
 
@@ -112,14 +118,3 @@ class MainController(QObject, BaseController):
         send_controller = SendController(self._current_account)
         send_dialog = SendDialog(send_controller)
         send_dialog.show()
-
-    def decrypt(self):
-        current_address = self._current_mail.sender
-    
-        private_key = self._current_account.key_pairs.where(
-            KeyPair.address == current_address)
-
-        if private_key.exists():
-            body = chipher.decrypt(self._current_mail.body,
-                                   private_key.get().private_key)
-            self._view.set_mail_body(body)

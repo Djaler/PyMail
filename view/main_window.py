@@ -87,8 +87,6 @@ class MainWindow(QMainWindow, BaseView):
         self._toolbar.addAction("Синхронизировать", self._controller.sync)
 
         self._toolbar.addAction("Написать", self._controller.send_mail)
-
-        self._toolbar.addAction("Расшифровать", self._controller.decrypt)
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 
@@ -131,7 +129,7 @@ class MainWindow(QMainWindow, BaseView):
         self._from_label.setText(from_)
         self._to_label.setText(to)
         self._subject_label.setText(subject)
-        self.set_mail_body(body)
+        self._mail_area.setHtml(body)
         
         _clear_layout(self._attachment_layout)
 
@@ -142,9 +140,6 @@ class MainWindow(QMainWindow, BaseView):
             self._attachment_layout.addWidget(attach_button, index, 0)
             self._attachment_layout.addWidget(
                 QLabel(naturalsize(size, gnu=True)), index, 1, 1, 2)
-
-    def set_mail_body(self, body):
-        self._mail_area.setHtml(body)
     
     def select_first_folder(self):
         first_folder = self._folders_widget.topLevelItem(0)
