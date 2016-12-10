@@ -16,32 +16,44 @@ class MainWindow(QMainWindow, BaseView):
         self._controller.set_accounts()
     
     def _init_ui(self):
+        self._init_menu()
         self._init_toolbar()
         
         self._splitter = QSplitter()
         self._splitter.setChildrenCollapsible(False)
         self.setCentralWidget(self._splitter)
-
+    
         self._folders_widget = QTreeWidget()
         self._folders_widget.setMinimumWidth(200)
         self._folders_widget.header().close()
         self._folders_widget.itemSelectionChanged.connect(
             self._controller.folder_changed)
         self._splitter.addWidget(self._folders_widget)
-
+    
         self._mails_widget = QListWidget()
         self._mails_widget.setMinimumWidth(200)
         self._mails_widget.setWordWrap(True)
         self._mails_widget.itemSelectionChanged.connect(
             self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
-
+    
         self._init_mail_widget()
         
         self.resize(700, 500)
         self.setWindowTitle('PyMail')
         self.showMaximized()
 
+    def _init_menu(self):
+        cipher_menu = self.menuBar().addMenu("Шифрование")
+        cipher_menu.addAction("Создать пару ключей",
+                              self._controller.create_key_pair)
+    
+        cipher_menu.addAction("Экспортировать публичный ключ",
+                              self._controller.export_public)
+    
+        cipher_menu.addAction("Импортировать публичный ключ",
+                              self._controller.import_public)
+    
     def _init_mail_widget(self):
         mail_widget = QWidget()
         self._splitter.addWidget(mail_widget)
@@ -85,15 +97,6 @@ class MainWindow(QMainWindow, BaseView):
         self._toolbar.addAction("Синхронизировать", self._controller.sync)
 
         self._toolbar.addAction("Написать", self._controller.send_mail)
-
-        self._toolbar.addAction("Создать пару ключей",
-                                self._controller.create_key_pair)
-
-        self._toolbar.addAction("Экспортировать публичный ключ",
-                                self._controller.export_public)
-
-        self._toolbar.addAction("Импортировать публичный ключ",
-                                self._controller.import_public)
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 

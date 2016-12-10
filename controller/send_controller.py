@@ -1,5 +1,5 @@
 from controller import BaseController
-from crypto import chipher
+from crypto import cipher
 from mail import smtp
 from model import ForeignKey
 
@@ -18,7 +18,7 @@ class SendController(BaseController):
             ForeignKey.address == address)
 
         if public_key.exists():
-            body = chipher.encrypt(body, public_key.get().key)
+            body = cipher.encrypt(body, public_key.get().key)
         
         try:
             smtp.send(self._current_account, address, self._view.subject, body)

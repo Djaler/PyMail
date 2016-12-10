@@ -5,7 +5,7 @@ from collections import OrderedDict
 from qtpy.QtCore import QObject
 
 from controller import *
-from crypto import chipher
+from crypto import cipher
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
@@ -97,7 +97,7 @@ class MainController(QObject, BaseController):
 
         if key_pair.exists():
             try:
-                body = chipher.decrypt(body, key_pair.get().private_key)
+                body = cipher.decrypt(body, key_pair.get().private_key)
             except DecryptionError:
                 pass
         
