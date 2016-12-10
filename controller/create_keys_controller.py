@@ -6,6 +6,7 @@ from model import KeyPair
 class CreateKeysController(BaseController):
     def __init__(self, current_account):
         super().__init__()
+
         self._current_account = current_account
     
     def create(self):
@@ -14,7 +15,5 @@ class CreateKeysController(BaseController):
         KeyPair.create(account=self._current_account,
                        address=self._view.address, public=public,
                        private=private)
-        
-        KeyPair.update()
         
         self._view.accept()

@@ -47,6 +47,8 @@ class MainWindow(QMainWindow, BaseView):
     def _init_menu(self):
         cipher_menu = self.menuBar().addMenu("Шифрование")
         cipher_menu.addAction("Пары ключей", self._controller.key_pairs)
+        cipher_menu.addAction("Импортированные ключи",
+                              self._controller.foreign_keys)
     
     def _init_mail_widget(self):
         mail_widget = QWidget()

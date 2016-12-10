@@ -124,9 +124,9 @@ class MainController(QObject, BaseController):
         dialog = SendDialog(controller)
         dialog.show()
 
-    def import_public(self):
-        controller = ImportPublicController(self._current_account)
-        dialog = ImportPublicDialog(controller)
+    def foreign_keys(self):
+        controller = ForeignKeysController(self._current_account)
+        dialog = ForeignKeysDialog(controller)
         dialog.show()
 
     def key_pairs(self):
