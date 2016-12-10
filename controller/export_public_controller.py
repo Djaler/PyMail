@@ -1,3 +1,5 @@
+from qtpy.QtWidgets import QMessageBox
+
 from controller import BaseController
 from model import KeyPair
 from utils import save_dialog
@@ -25,3 +27,7 @@ class ExportPublicController(BaseController):
                 file.write(public_key)
             
             self._view.accept()
+        else:
+            QMessageBox().warning(self._view, "Ошибка",
+                                  "Для данного адреса не сгенерирована пара "
+                                  "ключей")
