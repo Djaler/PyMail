@@ -91,6 +91,9 @@ class MainWindow(QMainWindow, BaseView):
 
         self._toolbar.addAction("Экспортировать публичный ключ",
                                 self._controller.export_public)
+
+        self._toolbar.addAction("Импортировать публичный ключ",
+                                self._controller.import_public)
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 

@@ -119,7 +119,7 @@ class RegisterDialog(QDialog):
         return self._smtp_ssl_checkbox.isChecked()
     
     def get_info(self):
-        return {"name": self.name(), "address": self.address(),
+        return {"name": self.name(), "login": self.address(),
                 "password": self.password(), "imap_host": self.imap_host(),
                 "imap_port": self.imap_port(), "imap_ssl": self.imap_ssl(),
                 "smtp_host": self.smtp_host(), "smtp_port": self.smtp_port(),

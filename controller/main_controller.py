@@ -133,3 +133,8 @@ class MainController(QObject, BaseController):
         controller = ExportPublicController(self._current_account)
         dialog = ExportPublicDialog(controller)
         dialog.show()
+
+    def import_public(self):
+        controller = ImportPublicController(self._current_account)
+        dialog = ImportPublicDialog(controller)
+        dialog.show()

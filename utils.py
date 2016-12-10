@@ -15,3 +15,10 @@ def save_dialog(parent, name, title):
                                                     default_path)
     
     return path_to_save
+
+
+def open_dialog(parent, title):
+    home = os.path.expanduser("~")
+    path_to_open, _ = QFileDialog().getOpenFileName(parent, title, home)
+    
+    return path_to_open
