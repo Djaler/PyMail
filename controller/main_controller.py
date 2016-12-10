@@ -1,17 +1,16 @@
-import os.path
 import re
 import shutil
 from collections import OrderedDict
 
 from qtpy.QtCore import QObject
-from qtpy.QtWidgets import QFileDialog
 
-from controller import BaseController, SendController, CreateKeysController
+from controller import *
 from crypto import chipher
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
-from view import SendDialog, CreateKeysDialog
+from utils import save_dialog
+from view import *
 
 
 class MainController(QObject, BaseController):
@@ -93,12 +92,12 @@ class MainController(QObject, BaseController):
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
-        private_key = self._current_account.key_pairs.where(
+        key_pair = self._current_account.key_pairs.where(
             KeyPair.address == from_)
 
-        if private_key.exists():
+        if key_pair.exists():
             try:
-                body = chipher.decrypt(body, private_key.get().private_key)
+                body = chipher.decrypt(body, key_pair.get().private_key)
             except DecryptionError:
                 pass
         
@@ -110,11 +109,7 @@ class MainController(QObject, BaseController):
     def save_attach(self):
         name = self.sender().text()
 
-        home = os.path.expanduser("~")
-        default_path = os.path.join(home, name)
-        path_to_save, _ = QFileDialog().getSaveFileName(self._view,
-                                                        "Сохранение файла",
-                                                        default_path)
+        path_to_save = save_dialog(self._view, name, "Сохранение файла")
         
         if not path_to_save:
             return
@@ -132,4 +127,9 @@ class MainController(QObject, BaseController):
     def create_key_pair(self):
         controller = CreateKeysController(self._current_account)
         dialog = CreateKeysDialog(controller)
+        dialog.show()
+
+    def export_public(self):
+        controller = ExportPublicController(self._current_account)
+        dialog = ExportPublicDialog(controller)
         dialog.show()

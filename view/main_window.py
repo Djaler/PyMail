@@ -88,6 +88,9 @@ class MainWindow(QMainWindow, BaseView):
 
         self._toolbar.addAction("Создать пару ключей",
                                 self._controller.create_key_pair)
+
+        self._toolbar.addAction("Экспортировать публичный ключ",
+                                self._controller.export_public)
         
         self.addToolBar(Qt.TopToolBarArea, self._toolbar)
 
