@@ -124,17 +124,12 @@ class MainController(QObject, BaseController):
         dialog = SendDialog(controller)
         dialog.show()
 
-    def create_key_pair(self):
-        controller = CreateKeysController(self._current_account)
-        dialog = CreateKeysDialog(controller)
-        dialog.show()
-
-    def export_public(self):
-        controller = ExportPublicController(self._current_account)
-        dialog = ExportPublicDialog(controller)
-        dialog.show()
-
     def import_public(self):
         controller = ImportPublicController(self._current_account)
         dialog = ImportPublicDialog(controller)
+        dialog.show()
+
+    def key_pairs(self):
+        controller = KeyPairsController(self._current_account)
+        dialog = KeyPairsDialog(controller)
         dialog.show()

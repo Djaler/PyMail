@@ -29,3 +29,5 @@ class ForeignKey(BaseEntity):
     
     class Meta:
         db_table = 'foreign_keys'
+
+        indexes = ((('account', 'address'), True),)

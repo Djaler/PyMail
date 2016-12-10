@@ -22,3 +22,12 @@ def open_dialog(parent, title):
     path_to_open, _ = QFileDialog().getOpenFileName(parent, title, home)
     
     return path_to_open
+
+
+def clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():
+            child.widget().deleteLater()
+        elif child.layout():
+            clear_layout(child.layout())

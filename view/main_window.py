@@ -5,6 +5,7 @@ from qtpy.QtWebEngineWidgets import *
 from qtpy.QtWidgets import *
 
 from view import BaseView
+from utils import clear_layout
 
 
 class MainWindow(QMainWindow, BaseView):
@@ -22,21 +23,21 @@ class MainWindow(QMainWindow, BaseView):
         self._splitter = QSplitter()
         self._splitter.setChildrenCollapsible(False)
         self.setCentralWidget(self._splitter)
-    
+
         self._folders_widget = QTreeWidget()
         self._folders_widget.setMinimumWidth(200)
         self._folders_widget.header().close()
         self._folders_widget.itemSelectionChanged.connect(
             self._controller.folder_changed)
         self._splitter.addWidget(self._folders_widget)
-    
+
         self._mails_widget = QListWidget()
         self._mails_widget.setMinimumWidth(200)
         self._mails_widget.setWordWrap(True)
         self._mails_widget.itemSelectionChanged.connect(
             self._controller.mail_changed)
         self._splitter.addWidget(self._mails_widget)
-    
+
         self._init_mail_widget()
         
         self.resize(700, 500)
@@ -45,14 +46,7 @@ class MainWindow(QMainWindow, BaseView):
 
     def _init_menu(self):
         cipher_menu = self.menuBar().addMenu("Шифрование")
-        cipher_menu.addAction("Создать пару ключей",
-                              self._controller.create_key_pair)
-    
-        cipher_menu.addAction("Экспортировать публичный ключ",
-                              self._controller.export_public)
-    
-        cipher_menu.addAction("Импортировать публичный ключ",
-                              self._controller.import_public)
+        cipher_menu.addAction("Пары ключей", self._controller.key_pairs)
     
     def _init_mail_widget(self):
         mail_widget = QWidget()
@@ -140,9 +134,9 @@ class MainWindow(QMainWindow, BaseView):
         self._to_label.setText(to)
         self._subject_label.setText(subject)
         self._mail_area.setHtml(body)
-        
-        _clear_layout(self._attachment_layout)
 
+        clear_layout(self._attachment_layout)
+        
         for index, (name, size) in enumerate(attachments.items()):
             attach_button = QPushButton(name)
             attach_button.pressed.connect(self._controller.save_attach)
@@ -168,12 +162,3 @@ class MessageWidget(QListWidgetItem):
 
         self.setText("\n".join([sender, subject]))
         self.setData(Qt.UserRole, id)
-
-
-def _clear_layout(layout):
-    while layout.count():
-        child = layout.takeAt(0)
-        if child.widget():
-            child.widget().deleteLater()
-        elif child.layout():
-            _clear_layout(child.layout())
