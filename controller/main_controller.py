@@ -5,16 +5,22 @@ from collections import OrderedDict
 from qtpy.QtCore import QObject
 
 from controller.base_controller import BaseController
-from controller.cipher.foreign_keys_controller import ForeignKeysController
-from controller.cipher.key_pairs_controller import KeyPairsController
+from controller.cipher.foreign_keys_controller import \
+    ForeignKeysController as CipherForeignKeysController
+from controller.cipher.key_pairs_controller import \
+    KeyPairsController as CipherKeyPairsController
 from controller.send_controller import SendController
-from crypto import cipher
+from controller.signature.foreign_keys_controller import \
+    ForeignKeysController as SignatureForeignKeysController
+from controller.signature.key_pairs_controller import \
+    KeyPairsController as SignatureKeyPairsController
+from crypto import cipher, signature
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
 from utils import save_dialog
-from view.cipher.foreign_keys_dialog import ForeignKeysDialog
-from view.cipher.key_pairs_dialog import KeyPairsDialog
+from view.foreign_keys_dialog import ForeignKeysDialog
+from view.key_pairs_dialog import KeyPairsDialog
 from view.send_dialog import SendDialog
 
 
@@ -97,14 +103,22 @@ class MainController(QObject, BaseController):
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
-        key_pair = self._current_account.key_pairs.where(
-            KeyPair.address == from_)
+        cipher_key_pair = self._current_account.cipher_key_pairs.where(
+            CipherKeyPair.address == from_)
 
-        if key_pair.exists():
+        if cipher_key_pair.exists():
             try:
-                body = cipher.decrypt(body, key_pair.get().private_key)
+                body = cipher.decrypt(body, cipher_key_pair.get().private_key)
             except DecryptionError:
                 pass
+
+        signature_key = self._current_account.signature_foreign_keys.where(
+            SignatureForeignKey.address == from_)
+
+        if signature_key.exists():
+            body, status = signature.decode_and_verify(body,
+                                                       signature_key.get().key)
+            # TODO Реагирование на неверную подпись
         
         attachments = {attach.name: attach.size for attach in
                        self._current_mail.attachments}
@@ -129,12 +143,22 @@ class MainController(QObject, BaseController):
         dialog = SendDialog(controller)
         dialog.show()
 
-    def foreign_keys(self):
-        controller = ForeignKeysController(self._current_account)
+    def cipher_foreign_keys(self):
+        controller = CipherForeignKeysController(self._current_account)
         dialog = ForeignKeysDialog(controller)
         dialog.show()
 
-    def key_pairs(self):
-        controller = KeyPairsController(self._current_account)
+    def cipher_key_pairs(self):
+        controller = CipherKeyPairsController(self._current_account)
+        dialog = KeyPairsDialog(controller)
+        dialog.show()
+
+    def sign_foreign_keys(self):
+        controller = SignatureForeignKeysController(self._current_account)
+        dialog = ForeignKeysDialog(controller)
+        dialog.show()
+
+    def sign_key_pairs(self):
+        controller = SignatureKeyPairsController(self._current_account)
         dialog = KeyPairsDialog(controller)
         dialog.show()

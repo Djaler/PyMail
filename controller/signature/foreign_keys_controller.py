@@ -1,8 +1,9 @@
 from qtpy.QtCore import QObject
 
 from controller.base_controller import BaseController
-from controller.cipher.import_public_controller import ImportPublicController
-from model import CipherForeignKey
+from controller.signature.import_public_controller import \
+    ImportPublicController
+from model import SignatureForeignKey
 from utils import save_dialog
 from view.import_public_dialog import ImportPublicDialog
 
@@ -15,14 +16,14 @@ class ForeignKeysController(QObject, BaseController):
     
     def load_keys(self):
         rows = [key.address for key in
-                self._current_account.cipher_foreign_keys]
+                self._current_account.signature_foreign_keys]
         self._view.set_rows(rows)
     
     def export(self):
         address = self.sender().property("address")
-
-        key = self._current_account.cipher_foreign_keys.where(
-            CipherForeignKey.address == address).get().key
+        
+        key = self._current_account.signature_foreign_keys.where(
+            SignatureForeignKey.address == address).get().key
         
         name = address + ".key"
         path_to_save = save_dialog(self._view, name, "Экспорт ключа")

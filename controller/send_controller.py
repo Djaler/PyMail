@@ -1,7 +1,7 @@
 from controller.base_controller import BaseController
-from crypto import cipher
+from crypto import cipher, signature
 from mail import smtp
-from model import ForeignKey
+from model import CipherForeignKey, SignatureKeyPair
 
 
 class SendController(BaseController):
@@ -14,11 +14,15 @@ class SendController(BaseController):
 
         address = self._view.to
 
-        public_key = self._current_account.foreign_keys.where(
-            ForeignKey.address == address)
+        sign_private_key = self._current_account.signature_key_pairs.where(
+            SignatureKeyPair.address == address)
+        if sign_private_key.exists():
+            body = signature.sign(body, sign_private_key.get().private_key)
 
-        if public_key.exists():
-            body = cipher.encrypt(body, public_key.get().key)
+        cipher_public_key = self._current_account.cipher_foreign_keys.where(
+            CipherForeignKey.address == address)
+        if cipher_public_key.exists():
+            body = cipher.encrypt(body, cipher_public_key.get().key)
         
         try:
             smtp.send(self._current_account, address, self._view.subject, body)

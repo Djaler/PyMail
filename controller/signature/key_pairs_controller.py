@@ -1,8 +1,8 @@
 from qtpy.QtCore import QObject
 
 from controller.base_controller import BaseController
-from controller.cipher.create_keys_controller import CreateKeysController
-from model import CipherKeyPair
+from controller.signature.create_keys_controller import CreateKeysController
+from model import SignatureKeyPair
 from utils import save_dialog
 from view.create_keys_dialog import CreateKeysDialog
 
@@ -15,22 +15,22 @@ class KeyPairsController(QObject, BaseController):
     
     def load_keys(self):
         rows = [pair.address for pair in
-                self._current_account.cipher_key_pairs]
+                self._current_account.signature_key_pairs]
         self._view.set_rows(rows)
     
     def export_public(self):
         address = self.sender().property("address")
-
-        public_key = self._current_account.cipher_key_pairs.where(
-            CipherKeyPair.address == address).get().public_key
+        
+        public_key = self._current_account.signature_key_pairs.where(
+            SignatureKeyPair.address == address).get().public_key
         
         self._export_key(public_key, address)
     
     def export_private(self):
         address = self.sender().property("address")
-
-        private_key = self._current_account.cipher_key_pairs.where(
-            CipherKeyPair.address == address).get().private_key
+        
+        private_key = self._current_account.signature_key_pairs.where(
+            SignatureKeyPair.address == address).get().private_key
         
         self._export_key(private_key, address)
     

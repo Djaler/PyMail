@@ -1,12 +1,12 @@
 from controller.base_controller import BaseController
-from model import CipherForeignKey
+from model import SignatureForeignKey
 from utils import open_dialog
 
 
 class ImportPublicController(BaseController):
     def __init__(self, current_account):
         super().__init__()
-
+        
         self._current_account = current_account
     
     def import_(self):
@@ -17,8 +17,9 @@ class ImportPublicController(BaseController):
         
         with open(path_to_open) as file:
             public_key = file.read()
-
-            CipherForeignKey.create(account=self._current_account,
-                                    address=self._view.address, key=public_key)
+            
+            SignatureForeignKey.create(account=self._current_account,
+                                       address=self._view.address,
+                                       key=public_key)
         
         self._view.accept()
