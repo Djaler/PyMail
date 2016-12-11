@@ -95,12 +95,22 @@ class MainController(QObject, BaseController):
             
             body = url_pattern.sub(r'<a href="\1">\1</a>', body)
 
+        body = self._decrypt_mail(body, from_)
+
+        attachments = {attach.name: attach.size for attach in
+                       self._current_mail.attachments}
+
+        self._view.set_mail(from_, to, subject, body, attachments)
+
+    def _decrypt_mail(self, body, from_):
         cipher_key_pair = self._current_account.cipher_key_pairs.where(
             CipherKeyPair.address == from_)
 
         if cipher_key_pair.exists():
             try:
-                body = cipher.decrypt(body, cipher_key_pair.get().private_key)
+                body = cipher.decrypt(body.encode(),
+                                      cipher_key_pair.get().private_key)
+                body = body.decode()
             except DecryptionError:
                 pass
 
@@ -108,15 +118,13 @@ class MainController(QObject, BaseController):
             SignatureForeignKey.address == from_)
 
         if signature_key.exists():
-            body, status = signature.decode_and_verify(body,
+            body, status = signature.decode_and_verify(body.encode(),
                                                        signature_key.get().key)
+            body = body.decode()
             # TODO Реагирование на неверную подпись
-        
-        attachments = {attach.name: attach.size for attach in
-                       self._current_mail.attachments}
 
-        self._view.set_mail(from_, to, subject, body, attachments)
-
+        return body
+    
     def save_attach(self):
         name = self.sender().text()
 
@@ -128,7 +136,41 @@ class MainController(QObject, BaseController):
         original_path = list(self._current_mail.attachments.select().where(
             Attachment.name == name))[0].path
 
-        shutil.copy(original_path, path_to_save)
+        encrypted = False
+        content = None
+
+        cipher_key_pair = self._current_account.cipher_key_pairs.where(
+            CipherKeyPair.address == self._current_mail.sender)
+
+        if cipher_key_pair.exists():
+            encrypted = True
+    
+            with open(original_path, 'rb') as file:
+                content = file.read()
+            try:
+                content = cipher.decrypt(content,
+                                         cipher_key_pair.get().private_key)
+            except DecryptionError:
+                pass
+
+        signature_key = self._current_account.signature_foreign_keys.where(
+            SignatureForeignKey.address == self._current_mail.sender)
+
+        if signature_key.exists():
+            if not encrypted:
+                with open(original_path, 'rb') as file:
+                    content = file.read()
+    
+            encrypted = True
+            content, status = signature.decode_and_verify(content,
+                                                          signature_key.get().key)
+            # TODO Реагирование на неверную подпись
+
+        if encrypted:
+            with open(path_to_save, 'wb') as file:
+                file.write(content)
+        else:
+            shutil.copy(original_path, path_to_save)
     
     def send_mail(self):
         controller = SendController(self._current_account)

@@ -50,7 +50,7 @@ def load(account: Account):
 
 def _load_folders(account: Account):
     connection = imapy.connect(host=account.imap_host, port=account.imap_port,
-                               username=account.login,
+                               username=account.address,
                                password=account.password, ssl=account.imap_ssl)
     
     folders = connection.folders()
@@ -94,7 +94,7 @@ class _MailService:
     def __enter__(self):
         self._connection = easyimap.connect(host=self._account.imap_host,
                                             port=self._account.imap_port,
-                                            user=self._account.login,
+                                            user=self._account.address,
                                             password=self._account.password,
                                             ssl=self._account.imap_ssl)
         return self

@@ -18,13 +18,14 @@ class CipherForeignKey(BaseEntity):
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
             keyring.set_password("PyMail",
-                                 self.account.login + " " + self.address + " cipher foreign public",
+                                 self.account.address + " " + self.address +
+                                 " cipher foreign public",
                                  self._key)
     
     @property
     def key(self):
         return keyring.get_password("PyMail",
-                                    self.account.login + " " + self.address + " cipher foreign public")
+                                    self.account.address + " " + self.address + " cipher foreign public")
     
     class Meta:
         db_table = 'cipher_foreign_keys'

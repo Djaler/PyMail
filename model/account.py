@@ -6,7 +6,7 @@ from model.base_entity import BaseEntity
 
 class Account(BaseEntity):
     name = TextField()
-    login = TextField(unique=True)
+    address = TextField(unique=True)
     imap_host = TextField()
     imap_port = IntegerField()
     imap_ssl = BooleanField()
@@ -22,11 +22,11 @@ class Account(BaseEntity):
     
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
-            keyring.set_password("PyMail", self.login, self._password)
+            keyring.set_password("PyMail", self.address, self._password)
     
     @property
     def password(self):
-        return keyring.get_password("PyMail", self.login)
+        return keyring.get_password("PyMail", self.address)
 
     class Meta:
         db_table = 'accounts'

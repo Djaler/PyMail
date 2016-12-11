@@ -23,6 +23,17 @@ class SendDialog(QDialog, BaseView):
         self._body_edit = QTextEdit()
         main_layout.addWidget(self._body_edit)
 
+        attach_layout = QHBoxLayout()
+        main_layout.addLayout(attach_layout)
+
+        self._attach_path_edit = QLineEdit()
+        self._attach_path_edit.setReadOnly(True)
+        attach_layout.addWidget(self._attach_path_edit)
+
+        attach_btn = QPushButton("Обзор")
+        attach_btn.pressed.connect(self._controller.attach_file)
+        attach_layout.addWidget(attach_btn)
+        
         send_btn = QPushButton("Отправить")
         send_btn.pressed.connect(self._controller.send)
         main_layout.addWidget(send_btn)
@@ -52,5 +63,9 @@ class SendDialog(QDialog, BaseView):
     def body(self):
         return self._body_edit.toPlainText()
 
-    def show_error(self, text):
-        QMessageBox().warning(self, 'Ошибка', text)
+    @property
+    def attach(self):
+        return self._attach_path_edit.text()
+
+    def set_attach(self, path):
+        self._attach_path_edit.setText(path)

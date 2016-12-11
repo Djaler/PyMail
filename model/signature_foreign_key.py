@@ -18,13 +18,14 @@ class SignatureForeignKey(BaseEntity):
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
             keyring.set_password("PyMail",
-                                 self.account.login + " " + self.address + " signature foreign public",
+                                 self.account.address + " " + self.address +
+                                 " signature foreign public",
                                  self._key)
     
     @property
     def key(self):
         return keyring.get_password("PyMail",
-                                    self.account.login + " " + self.address
+                                    self.account.address + " " + self.address
                                     + " signature foreign public")
     
     class Meta:

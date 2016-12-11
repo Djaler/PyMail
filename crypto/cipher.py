@@ -16,7 +16,7 @@ def encrypt(data, public_key):
 
     encrypted = key_length_bytes + encrypted_key + encrypted_data
 
-    return base64.standard_b64encode(encrypted).decode()
+    return base64.standard_b64encode(encrypted)
 
 
 def decrypt(encrypted, private_key):

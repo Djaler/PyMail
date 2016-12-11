@@ -8,11 +8,11 @@ def generate_key(length):
 
 def encrypt(data, key):
     des = pyDes.triple_des(key)
-    
-    return des.encrypt(data.encode(), padmode=pyDes.PAD_PKCS5)
+
+    return des.encrypt(data, padmode=pyDes.PAD_PKCS5)
 
 
 def decrypt(data, key):
     des = pyDes.triple_des(key)
-    
-    return des.decrypt(data, padmode=pyDes.PAD_PKCS5).decode()
+
+    return des.decrypt(data, padmode=pyDes.PAD_PKCS5)

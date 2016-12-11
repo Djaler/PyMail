@@ -21,22 +21,23 @@ class CipherKeyPair(BaseEntity):
     def save(self, force_insert=False, only=None):
         if super().save(force_insert, only):
             keyring.set_password("PyMail",
-                                 self.account.login + " " + self.address + " cipher public",
+                                 self.account.address + " " + self.address +
+                                 " cipher public",
                                  self._public)
 
             keyring.set_password("PyMail",
-                                 self.account.login + " " + self.address + " cipher private",
+                                 self.account.address + " " + self.address + " cipher private",
                                  self._private)
     
     @property
     def public_key(self):
         return keyring.get_password("PyMail",
-                                    self.account.login + " " + self.address + " cipher public")
+                                    self.account.address + " " + self.address + " cipher public")
     
     @property
     def private_key(self):
         return keyring.get_password("PyMail",
-                                    self.account.login + " " + self.address + " cipher private")
+                                    self.account.address + " " + self.address + " cipher private")
     
     class Meta:
         db_table = 'cipher_key_pairs'
