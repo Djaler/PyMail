@@ -1,4 +1,4 @@
-from controller import BaseController
+from controller.base_controller import BaseController
 from crypto import cipher
 from mail import smtp
 from model import ForeignKey

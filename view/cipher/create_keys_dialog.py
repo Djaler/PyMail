@@ -1,9 +1,9 @@
 from qtpy.QtWidgets import *
 
-from view import BaseView
+from view.base_view import BaseView
 
 
-class ImportPublicDialog(QDialog, BaseView):
+class CreateKeysDialog(QDialog, BaseView):
     def __init__(self, controller):
         super().__init__(controller=controller)
         
@@ -18,13 +18,13 @@ class ImportPublicDialog(QDialog, BaseView):
         self._address_edit = QLineEdit()
         form_layout.addRow("Адрес собеседника:", self._address_edit)
         
-        import_button = QPushButton("Импортировать")
-        import_button.pressed.connect(self._controller.import_)
-        main_layout.addWidget(import_button)
+        create_btn = QPushButton("Создать")
+        create_btn.pressed.connect(self._controller.create)
+        main_layout.addWidget(create_btn)
         
         self.setLayout(main_layout)
         self.setMinimumWidth(300)
-        self.setWindowTitle('Импорт публичного ключа')
+        self.setWindowTitle('Создание пары ключей')
         self.setModal(True)
         self.show()
         self._center()

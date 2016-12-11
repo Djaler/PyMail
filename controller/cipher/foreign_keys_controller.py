@@ -1,9 +1,10 @@
 from qtpy.QtCore import QObject
 
+from controller.base_controller import BaseController
+from controller.cipher.import_public_controller import ImportPublicController
 from model import ForeignKey
-from controller import BaseController, ImportPublicController
-from view import ImportPublicDialog
-from utils import save_dialog, open_dialog
+from utils import save_dialog
+from view.cipher.import_public_dialog import ImportPublicDialog
 
 
 class ForeignKeysController(QObject, BaseController):

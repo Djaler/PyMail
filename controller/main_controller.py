@@ -4,13 +4,18 @@ from collections import OrderedDict
 
 from qtpy.QtCore import QObject
 
-from controller import *
+from controller.base_controller import BaseController
+from controller.cipher.foreign_keys_controller import ForeignKeysController
+from controller.cipher.key_pairs_controller import KeyPairsController
+from controller.send_controller import SendController
 from crypto import cipher
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
 from utils import save_dialog
-from view import *
+from view.cipher.foreign_keys_dialog import ForeignKeysDialog
+from view.cipher.key_pairs_dialog import KeyPairsDialog
+from view.send_dialog import SendDialog
 
 
 class MainController(QObject, BaseController):

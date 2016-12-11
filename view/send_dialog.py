@@ -1,6 +1,6 @@
 from qtpy.QtWidgets import *
 
-from view import BaseView
+from view.base_view import BaseView
 
 
 class SendDialog(QDialog, BaseView):

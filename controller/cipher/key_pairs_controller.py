@@ -1,9 +1,10 @@
 from qtpy.QtCore import QObject
 
+from controller.base_controller import BaseController
+from controller.cipher.create_keys_controller import CreateKeysController
 from model import KeyPair
-from controller import BaseController, CreateKeysController
-from view import CreateKeysDialog
 from utils import save_dialog
+from view.cipher.create_keys_dialog import CreateKeysDialog
 
 
 class KeyPairsController(QObject, BaseController):

@@ -4,8 +4,8 @@ from qtpy.QtCore import *
 from qtpy.QtWebEngineWidgets import *
 from qtpy.QtWidgets import *
 
-from view import BaseView
 from utils import clear_layout
+from view.base_view import BaseView
 
 
 class MainWindow(QMainWindow, BaseView):

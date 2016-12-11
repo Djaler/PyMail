@@ -1,4 +1,4 @@
-from controller import BaseController
+from controller.base_controller import BaseController
 from model import ForeignKey
 from utils import open_dialog
 
