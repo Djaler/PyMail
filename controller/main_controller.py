@@ -3,6 +3,7 @@ import shutil
 from collections import OrderedDict
 
 from qtpy.QtCore import QObject
+from qtpy.QtWidgets import QMessageBox
 
 from controller import (BaseController, CipherKeyPairsController,
                         CipherForeignKeysController, SendController,
@@ -112,17 +113,20 @@ class MainController(QObject, BaseController):
                                       cipher_key_pair.get().private_key)
                 body = body.decode()
             except DecryptionError:
-                pass
-
+                QMessageBox().warning(self._view, 'Ошибка',
+                                      "Невозможно расшифровать")
+                return body
+        
         signature_key = self._current_account.signature_foreign_keys.where(
             SignatureForeignKey.address == from_)
 
         if signature_key.exists():
-            body, status = signature.decode_and_verify(body.encode(),
-                                                       signature_key.get().key)
+            body, correct = signature.decode_and_verify(body.encode(),
+                                                        signature_key.get().key)
             body = body.decode()
-            # TODO Реагирование на неверную подпись
-
+            if not correct:
+                QMessageBox().warning(self._view, 'Ошибка', "Подпись не верна")
+        
         return body
     
     def save_attach(self):
@@ -144,15 +148,17 @@ class MainController(QObject, BaseController):
 
         if cipher_key_pair.exists():
             encrypted = True
-    
+
             with open(original_path, 'rb') as file:
                 content = file.read()
             try:
                 content = cipher.decrypt(content,
                                          cipher_key_pair.get().private_key)
             except DecryptionError:
-                pass
-
+                QMessageBox().warning(self._view, 'Ошибка',
+                                      "Невозможно расшифровать")
+                return
+        
         signature_key = self._current_account.signature_foreign_keys.where(
             SignatureForeignKey.address == self._current_mail.sender)
 
@@ -160,12 +166,14 @@ class MainController(QObject, BaseController):
             if not encrypted:
                 with open(original_path, 'rb') as file:
                     content = file.read()
-    
-            encrypted = True
-            content, status = signature.decode_and_verify(content,
-                                                          signature_key.get().key)
-            # TODO Реагирование на неверную подпись
 
+            encrypted = True
+            content, correct = signature.decode_and_verify(content,
+                                                           signature_key.get().key)
+            if not correct:
+                QMessageBox().warning(self._view, 'Ошибка', "Подпись не верна")
+                return
+        
         if encrypted:
             with open(path_to_save, 'wb') as file:
                 file.write(content)
