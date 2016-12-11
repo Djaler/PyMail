@@ -1,5 +1,6 @@
 import keyring
 from peewee import *
+from playhouse.signals import *
 
 from model.base_entity import BaseEntity
 
@@ -20,13 +21,19 @@ class Account(BaseEntity):
         if password:
             self._password = password
     
-    def save(self, force_insert=False, only=None):
-        if super().save(force_insert, only):
-            keyring.set_password("PyMail", self.address, self._password)
-    
     @property
     def password(self):
         return keyring.get_password("PyMail", self.address)
 
     class Meta:
         db_table = 'accounts'
+
+
+@post_save(sender=Account)
+def on_save_handler_account(model_class, instance, created):
+    keyring.set_password("PyMail", instance.address, instance._password)
+
+
+@pre_delete(sender=Account)
+def on_delete_handler_account(model_class, instance):
+    keyring.delete_password("PyMail", instance.address)

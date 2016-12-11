@@ -1,5 +1,6 @@
 import keyring
 from peewee import *
+from playhouse.signals import *
 
 from model.account import Account
 from model.base_entity import BaseEntity
@@ -15,19 +16,28 @@ class CipherForeignKey(BaseEntity):
         if key:
             self._key = key
     
-    def save(self, force_insert=False, only=None):
-        if super().save(force_insert, only):
-            keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address +
-                                 " cipher foreign public",
-                                 self._key)
-    
     @property
     def key(self):
         return keyring.get_password("PyMail",
-                                    self.account.address + " " + self.address + " cipher foreign public")
+                                    self.account.address + " " +
+                                    self.address + " cipher foreign public")
     
     class Meta:
         db_table = 'cipher_foreign_keys'
         
         indexes = ((('account', 'address'), True),)
+
+
+@post_save(sender=CipherForeignKey)
+def on_save_handler_cipher_foreign(model_class, instance, created):
+    keyring.set_password("PyMail",
+                         instance.account.address + " " + instance.address +
+                         " cipher foreign public",
+                         instance._key)
+
+
+@pre_delete(sender=CipherForeignKey)
+def on_delete_handler_cipher_foreign(model_class, instance):
+    keyring.delete_password("PyMail",
+                            instance.account.address + " " +
+                            instance.address + " cipher foreign public")

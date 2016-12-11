@@ -1,5 +1,6 @@
 import keyring
 from peewee import *
+from playhouse.signals import *
 
 from model.account import Account
 from model.base_entity import BaseEntity
@@ -18,30 +19,43 @@ class SignatureKeyPair(BaseEntity):
         if private:
             self._private = private
     
-    def save(self, force_insert=False, only=None):
-        if super().save(force_insert, only):
-            keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address +
-                                 " signature public",
-                                 self._public)
-            
-            keyring.set_password("PyMail",
-                                 self.account.address + " " + self.address + " signature private",
-                                 self._private)
-    
     @property
     def public_key(self):
         return keyring.get_password("PyMail",
-                                    self.account.address + " " + self.address
-                                    + " signature public")
+                                    self.account.address + " " +
+                                    self.address + " signature public")
     
     @property
     def private_key(self):
         return keyring.get_password("PyMail",
-                                    self.account.address + " " + self.address
-                                    + " signature private")
+                                    self.account.address + " " +
+                                    self.address + " signature private")
     
     class Meta:
         db_table = 'signature_key_pairs'
         
         indexes = ((('account', 'address'), True),)
+
+
+@post_save(sender=SignatureKeyPair)
+def on_save_handler_sign_pair(model_class, instance, created):
+    keyring.set_password("PyMail",
+                         instance.account.address + " " + instance.address +
+                         " signature public",
+                         instance._public)
+    
+    keyring.set_password("PyMail",
+                         instance.account.address + " " + instance.address +
+                         " signature private",
+                         instance._private)
+
+
+@pre_delete(sender=SignatureKeyPair)
+def on_delete_handler_sign_pair(model_class, instance):
+    keyring.delete_password("PyMail",
+                            instance.account.address + " " +
+                            instance.address + " signature public")
+    
+    keyring.delete_password("PyMail",
+                            instance.account.address + " " +
+                            instance.address + " signature private")
