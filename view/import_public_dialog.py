@@ -1,6 +1,6 @@
 from qtpy.QtWidgets import *
 
-from view.base_view import BaseView
+from view import BaseView
 
 
 class ImportPublicDialog(QDialog, BaseView):

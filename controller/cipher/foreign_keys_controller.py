@@ -1,6 +1,6 @@
 from qtpy.QtCore import QObject
 
-from controller.base_controller import BaseController
+from controller import BaseController
 from controller.cipher.import_public_controller import ImportPublicController
 from model import CipherForeignKey
 from utils import save_dialog

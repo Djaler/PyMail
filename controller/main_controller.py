@@ -4,24 +4,16 @@ from collections import OrderedDict
 
 from qtpy.QtCore import QObject
 
-from controller.base_controller import BaseController
-from controller.cipher.foreign_keys_controller import \
-    ForeignKeysController as CipherForeignKeysController
-from controller.cipher.key_pairs_controller import \
-    KeyPairsController as CipherKeyPairsController
-from controller.send_controller import SendController
-from controller.signature.foreign_keys_controller import \
-    ForeignKeysController as SignatureForeignKeysController
-from controller.signature.key_pairs_controller import \
-    KeyPairsController as SignatureKeyPairsController
+from controller import (BaseController, CipherKeyPairsController,
+                        CipherForeignKeysController, SendController,
+                        SignatureKeyPairsController,
+                        SignatureForeignKeysController)
 from crypto import cipher, signature
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
 from utils import save_dialog
-from view.foreign_keys_dialog import ForeignKeysDialog
-from view.key_pairs_dialog import KeyPairsDialog
-from view.send_dialog import SendDialog
+from view import ForeignKeysDialog, KeyPairsDialog, SendDialog
 
 
 class MainController(QObject, BaseController):

@@ -1,6 +1,6 @@
 from qtpy.QtCore import QObject
 
-from controller.base_controller import BaseController
+from controller import BaseController
 from controller.signature.create_keys_controller import CreateKeysController
 from model import SignatureKeyPair
 from utils import save_dialog

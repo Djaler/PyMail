@@ -1,4 +1,4 @@
-from controller.base_controller import BaseController
+from controller import BaseController
 from model import SignatureForeignKey
 from utils import open_dialog
 

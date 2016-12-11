@@ -1,6 +1,6 @@
 from qtpy.QtCore import QObject
 
-from controller.base_controller import BaseController
+from controller import BaseController
 from controller.signature.import_public_controller import \
     ImportPublicController
 from model import SignatureForeignKey
