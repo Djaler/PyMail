@@ -39,3 +39,12 @@ class ForeignKeysController(QObject, BaseController):
         dialog.exec()
         
         self.load_keys()
+
+    def delete(self):
+        address = self.sender().property("address")
+    
+        key = self._current_account.cipher_foreign_keys.where(
+            CipherForeignKey.address == address).get()
+        key.delete_instance()
+    
+        self.load_keys()

@@ -50,3 +50,12 @@ class KeyPairsController(QObject, BaseController):
         dialog.exec()
         
         self.load_keys()
+
+    def delete(self):
+        address = self.sender().property("address")
+    
+        pair = self._current_account.cipher_key_pairs.where(
+            CipherKeyPair.address == address).get()
+        pair.delete_instance()
+    
+        self.load_keys()

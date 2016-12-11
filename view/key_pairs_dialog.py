@@ -40,6 +40,10 @@ class KeyPairsDialog(QDialog, BaseView):
             export_private_btn.setProperty("address", address)
             export_private_btn.pressed.connect(self._controller.export_private)
             self._grid_layout.addWidget(export_private_btn, index, 2)
+            delete_btn = QPushButton("Удалить")
+            delete_btn.setProperty("address", address)
+            delete_btn.pressed.connect(self._controller.delete)
+            self._grid_layout.addWidget(delete_btn, index, 3)
         
         self._center()
     
