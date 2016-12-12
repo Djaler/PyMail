@@ -40,12 +40,15 @@ IMAP.folder = _folder
 
 
 def load(account: Account):
-    _load_folders(account)
-    
-    with _MailService(account) as mail_service:
-        for folder in account.folders:
-            if folder.with_emails:
-                mail_service.load_emails(folder)
+    try:
+        _load_folders(account)
+        
+        with _MailService(account) as mail_service:
+            for folder in account.folders:
+                if folder.with_emails:
+                    mail_service.load_emails(folder)
+    except ConnectionRefused:
+        raise SynchronizationError
 
 
 def _load_folders(account: Account):
@@ -205,3 +208,7 @@ class _MailService:
     @staticmethod
     def _to_utf_7(name):
         return utils.b('"') + utils.str_to_utf7(name) + utils.b('"')
+
+
+class SynchronizationError(Exception):
+    pass

@@ -20,6 +20,7 @@ from view import ForeignKeysDialog, KeyPairsDialog, SendDialog
 
 class MainController(QObject, BaseController):
     _update_signal = Signal()
+    _sync_fail_signal = Signal()
     
     def __init__(self):
         super().__init__()
@@ -31,6 +32,10 @@ class MainController(QObject, BaseController):
         self._current_mail = None
 
         self._update_signal.connect(self._update)
+        self._sync_fail_signal.connect(self._sync_fail)
+
+    def _sync_fail(self):
+        QMessageBox().warning(self._view, 'Ошибка', "Ошибка синхронизации")
     
     def account_changed(self, current_index):
         self._current_account = self._accounts[current_index]
@@ -63,8 +68,11 @@ class MainController(QObject, BaseController):
         Thread(target=self._sync).start()
     
     def _sync(self):
-        imap.load(self._current_account)
-
+        try:
+            imap.load(self._current_account)
+        except imap.SynchronizationError:
+            self._sync_fail_signal.emit()
+        
         self._update_signal.emit()
     
     def folder_changed(self):
