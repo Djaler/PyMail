@@ -1,8 +1,9 @@
 import re
 import shutil
 from collections import OrderedDict
+from threading import Thread
 
-from qtpy.QtCore import QObject
+from qtpy.QtCore import QObject, Signal
 from qtpy.QtWidgets import QMessageBox
 
 from controller import (BaseController, CipherKeyPairsController,
@@ -18,6 +19,8 @@ from view import ForeignKeysDialog, KeyPairsDialog, SendDialog
 
 
 class MainController(QObject, BaseController):
+    _update_signal = Signal()
+    
     def __init__(self):
         super().__init__()
 
@@ -26,12 +29,14 @@ class MainController(QObject, BaseController):
         self._current_account = None
 
         self._current_mail = None
+
+        self._update_signal.connect(self._update)
     
     def account_changed(self, current_index):
         self._current_account = self._accounts[current_index]
 
         self._update()
-
+    
     def _update(self):
         folders = OrderedDict()
 
@@ -50,14 +55,17 @@ class MainController(QObject, BaseController):
         self._view.update_folders_tree(folders)
         
         self._view.select_first_folder()
-
+    
     def set_accounts(self):
         self._view.set_accounts(account.name for account in self._accounts)
     
     def sync(self):
+        Thread(target=self._sync).start()
+    
+    def _sync(self):
         imap.load(self._current_account)
-        
-        self._update()
+
+        self._update_signal.emit()
     
     def folder_changed(self):
         self._view.clear_mails_widget()
@@ -102,7 +110,7 @@ class MainController(QObject, BaseController):
                        self._current_mail.attachments}
 
         self._view.set_mail(from_, to, subject, body, attachments)
-
+    
     def _decrypt_mail(self, body, from_):
         cipher_key_pair = self._current_account.cipher_key_pairs.where(
             CipherKeyPair.address == from_)
@@ -184,22 +192,22 @@ class MainController(QObject, BaseController):
         controller = SendController(self._current_account)
         dialog = SendDialog(controller)
         dialog.show()
-
+    
     def cipher_foreign_keys(self):
         controller = CipherForeignKeysController(self._current_account)
         dialog = ForeignKeysDialog(controller)
         dialog.show()
-
+    
     def cipher_key_pairs(self):
         controller = CipherKeyPairsController(self._current_account)
         dialog = KeyPairsDialog(controller)
         dialog.show()
-
+    
     def sign_foreign_keys(self):
         controller = SignatureForeignKeysController(self._current_account)
         dialog = ForeignKeysDialog(controller)
         dialog.show()
-
+    
     def sign_key_pairs(self):
         controller = SignatureKeyPairsController(self._current_account)
         dialog = KeyPairsDialog(controller)
