@@ -4,10 +4,10 @@ from controller import BaseController
 from controller.cipher.import_public_controller import ImportPublicController
 from model import CipherForeignKey
 from utils import save_dialog
-from view.import_public_dialog import ImportPublicDialog
+from view import ImportPublicDialog
 
 
-class ForeignKeysController(QObject, BaseController):
+class CipherForeignKeysController(QObject, BaseController):
     def __init__(self, current_account):
         super().__init__()
         

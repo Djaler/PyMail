@@ -14,10 +14,17 @@ class KeyPairsDialog(QDialog, BaseView):
         main_layout = QVBoxLayout()
         self._grid_layout = QGridLayout()
         main_layout.addLayout(self._grid_layout)
+
+        buttons_layout = QHBoxLayout()
+        main_layout.addLayout(buttons_layout)
         
         generate_pair_btn = QPushButton("Сгенерировать новую пару")
         generate_pair_btn.pressed.connect(self._controller.create_key_pair)
-        main_layout.addWidget(generate_pair_btn)
+        buttons_layout.addWidget(generate_pair_btn)
+
+        import_pair_btn = QPushButton("Импортировать пару")
+        import_pair_btn.pressed.connect(self._controller.import_key_pair)
+        buttons_layout.addWidget(import_pair_btn)
         
         self._controller.load_keys()
         self.setLayout(main_layout)

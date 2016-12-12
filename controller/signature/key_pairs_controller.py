@@ -2,12 +2,13 @@ from qtpy.QtCore import QObject
 
 from controller import BaseController
 from controller.signature.create_keys_controller import CreateKeysController
+from controller.signature.import_pair_controller import ImportPairController
 from model import SignatureKeyPair
 from utils import save_dialog
-from view.create_keys_dialog import CreateKeysDialog
+from view import CreateKeysDialog, ImportPairDialog
 
 
-class KeyPairsController(QObject, BaseController):
+class SignatureKeyPairsController(QObject, BaseController):
     def __init__(self, current_account):
         super().__init__()
         
@@ -53,9 +54,16 @@ class KeyPairsController(QObject, BaseController):
 
     def delete(self):
         address = self.sender().property("address")
-    
+
         pair = self._current_account.signature_key_pairs.where(
             SignatureKeyPair.address == address).get()
         pair.delete_instance()
-    
+
+        self.load_keys()
+
+    def import_key_pair(self):
+        controller = ImportPairController(self._current_account)
+        dialog = ImportPairDialog(controller)
+        dialog.exec()
+        
         self.load_keys()

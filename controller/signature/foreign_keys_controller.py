@@ -5,10 +5,10 @@ from controller.signature.import_public_controller import \
     ImportPublicController
 from model import SignatureForeignKey
 from utils import save_dialog
-from view.import_public_dialog import ImportPublicDialog
+from view import ImportPublicDialog
 
 
-class ForeignKeysController(QObject, BaseController):
+class SignatureForeignKeysController(QObject, BaseController):
     def __init__(self, current_account):
         super().__init__()
         
@@ -43,9 +43,9 @@ class ForeignKeysController(QObject, BaseController):
 
     def delete(self):
         address = self.sender().property("address")
-    
+
         key = self._current_account.signature_foreign_keys.where(
             SignatureForeignKey.address == address).get()
         key.delete_instance()
-    
+
         self.load_keys()
