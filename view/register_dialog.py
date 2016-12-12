@@ -3,11 +3,12 @@ from getpass import getuser
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
+from view import BaseView
 
-# TODO Проверка подключения при добавлении
-class RegisterDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+
+class RegisterDialog(QDialog, BaseView):
+    def __init__(self, controller):
+        super().__init__(controller=controller)
         
         self._init_ui()
     
@@ -59,7 +60,7 @@ class RegisterDialog(QDialog):
         cancel_button.pressed.connect(self.reject)
         buttons_layout.addWidget(cancel_button)
         self._add_button = QPushButton("Добавить")
-        self._add_button.pressed.connect(self.accept)
+        self._add_button.pressed.connect(self._controller.add)
         buttons_layout.addWidget(self._add_button)
         main_layout.addRow(buttons_layout)
         
@@ -78,7 +79,7 @@ class RegisterDialog(QDialog):
         self.show()
         self._center()
         self.setFocus()
-
+    
     def _center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -91,36 +92,38 @@ class RegisterDialog(QDialog):
         else:
             self._add_button.setEnabled(True)
     
+    @property
     def name(self):
         return self._name_edit.text()
     
+    @property
     def address(self):
         return self._address_edit.text()
     
+    @property
     def password(self):
         return self._password_edit.text()
     
+    @property
     def imap_host(self):
         return self._imap_host_edit.text()
     
+    @property
     def imap_port(self):
         return int(self._imap_port_edit.text())
     
+    @property
     def imap_ssl(self):
         return self._imap_ssl_checkbox.isChecked()
     
+    @property
     def smtp_host(self):
         return self._smtp_host_edit.text()
     
+    @property
     def smtp_port(self):
         return int(self._smtp_port_edit.text())
     
+    @property
     def smtp_ssl(self):
         return self._smtp_ssl_checkbox.isChecked()
-    
-    def get_info(self):
-        return {"name": self.name(), "address": self.address(),
-                "password": self.password(), "imap_host": self.imap_host(),
-                "imap_port": self.imap_port(), "imap_ssl": self.imap_ssl(),
-                "smtp_host": self.smtp_host(), "smtp_port": self.smtp_port(),
-                "smtp_ssl": self.smtp_ssl()}

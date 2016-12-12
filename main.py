@@ -3,11 +3,12 @@ from sys import argv, exit
 
 from qtpy.QtWidgets import QApplication
 
+from controller import RegisterController
 from controller.main_controller import MainController
 from model import init_database, Account
 from utils import get_app_folder
+from view import RegisterDialog
 from view.main_window import MainWindow
-from view.register_dialog import RegisterDialog
 
 if __name__ == '__main__':
     app = QApplication(argv)
@@ -16,12 +17,10 @@ if __name__ == '__main__':
     accounts = Account.select()
 
     if not accounts:
-        register_dialog = RegisterDialog()
-        if register_dialog.exec():
-            Account.create(**register_dialog.get_info())
-        else:
-            app.quit()
-
+        register_controller = RegisterController()
+        register_dialog = RegisterDialog(register_controller)
+        register_dialog.exec()
+    
     controller = MainController()
     window = MainWindow(controller)
     
