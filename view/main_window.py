@@ -59,6 +59,7 @@ class MainWindow(QMainWindow, BaseView):
         account_menu = self.menuBar().addMenu("Аккаунт")
         account_menu.addAction("Редактировать",
                                self._controller.change_account)
+        account_menu.addAction("Добавить", self._controller.add_account)
     
     def _init_mail_widget(self):
         mail_widget = QWidget()
@@ -115,6 +116,7 @@ class MainWindow(QMainWindow, BaseView):
         return self._mails_widget.currentItem().data(Qt.UserRole)
 
     def set_accounts(self, accounts):
+        self._accounts_combobox.clear()
         self._accounts_combobox.addItems(accounts)
 
     def update_folders_tree(self, folders):

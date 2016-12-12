@@ -3,6 +3,11 @@ from model import Account
 
 
 class RegisterController(BaseController):
+    def __init__(self, current_account=None, main_controller=None):
+        super().__init__()
+        self._current_account = current_account
+        self._main_controller = main_controller
+    
     def add(self):
         Account.create(name=self._view.name, address=self._view.address,
                        password=self._view.password,
@@ -14,3 +19,6 @@ class RegisterController(BaseController):
                        smtp_ssl=self._view.smtp_ssl)
         
         self._view.accept()
+
+        if self._main_controller:
+            self._main_controller.update_accounts()

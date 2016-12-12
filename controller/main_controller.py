@@ -10,14 +10,14 @@ from controller import (BaseController, CipherKeyPairsController,
                         CipherForeignKeysController, SendController,
                         SignatureKeyPairsController,
                         SignatureForeignKeysController,
-                        ChangeAccountController)
+                        ChangeAccountController, RegisterController)
 from crypto import cipher, signature
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
 from utils import save_dialog
 from view import (ForeignKeysDialog, KeyPairsDialog, SendDialog,
-                  ChangeAccountDialog)
+                  ChangeAccountDialog, RegisterDialog)
 
 
 class MainController(QObject, BaseController):
@@ -230,4 +230,9 @@ class MainController(QObject, BaseController):
     def change_account(self):
         controller = ChangeAccountController(self._current_account, self)
         dialog = ChangeAccountDialog(controller)
+        dialog.show()
+
+    def add_account(self):
+        controller = RegisterController(self._current_account, self)
+        dialog = RegisterDialog(controller)
         dialog.show()
