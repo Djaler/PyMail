@@ -9,13 +9,15 @@ from qtpy.QtWidgets import QMessageBox
 from controller import (BaseController, CipherKeyPairsController,
                         CipherForeignKeysController, SendController,
                         SignatureKeyPairsController,
-                        SignatureForeignKeysController)
+                        SignatureForeignKeysController,
+                        ChangeAccountController)
 from crypto import cipher, signature
 from crypto.rsa import DecryptionError
 from mail import imap
 from model import *
 from utils import save_dialog
-from view import ForeignKeysDialog, KeyPairsDialog, SendDialog
+from view import (ForeignKeysDialog, KeyPairsDialog, SendDialog,
+                  ChangeAccountDialog)
 
 
 class MainController(QObject, BaseController):
@@ -34,6 +36,10 @@ class MainController(QObject, BaseController):
         self._update_signal.connect(self._update)
         self._sync_fail_signal.connect(self._sync_fail)
 
+    def update_accounts(self):
+        self._accounts = list(Account.select())
+        self.set_accounts()
+    
     def _sync_fail(self):
         QMessageBox().warning(self._view, 'Ошибка', "Ошибка синхронизации")
     
@@ -219,4 +225,9 @@ class MainController(QObject, BaseController):
     def sign_key_pairs(self):
         controller = SignatureKeyPairsController(self._current_account)
         dialog = KeyPairsDialog(controller)
+        dialog.show()
+
+    def change_account(self):
+        controller = ChangeAccountController(self._current_account, self)
+        dialog = ChangeAccountDialog(controller)
         dialog.show()

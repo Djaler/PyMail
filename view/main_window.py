@@ -55,6 +55,10 @@ class MainWindow(QMainWindow, BaseView):
                                  self._controller.sign_key_pairs)
         signature_menu.addAction("Импортированные ключи",
                                  self._controller.sign_foreign_keys)
+
+        account_menu = self.menuBar().addMenu("Аккаунт")
+        account_menu.addAction("Редактировать",
+                               self._controller.change_account)
     
     def _init_mail_widget(self):
         mail_widget = QWidget()
