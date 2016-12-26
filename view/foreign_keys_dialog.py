@@ -22,7 +22,7 @@ class ForeignKeysDialog(QDialog, BaseView):
         self._controller.load_keys()
         self.setLayout(main_layout)
         self.setMinimumWidth(300)
-        self.setWindowTitle('Пары ключей')
+        self.setWindowTitle('Импортированные ключи')
         self.setModal(True)
         self.show()
         self._center()
